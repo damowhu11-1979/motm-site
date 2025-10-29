@@ -166,27 +166,15 @@
 
   <script>
     // ---------- CONFIG (HARDCODED) ----------
-    const HARDCODED_CONFIG = {
-      apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
-      authDomain: "motm--pumas.firebaseapp.com",
-      projectId: "motm--pumas",
-      storageBucket: "motm--pumas.firebasestorage.app",
-      messagingSenderId: "953454926915",
-      appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
-    };
+const HARDCODED_CONFIG = {
+  apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
+  authDomain: "motm--pumas.firebaseapp.com",
+  projectId: "motm--pumas",
+  storageBucket: "motm--pumas.firebasestorage.app",
+  messagingSenderId: "953454926915",
+  appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
+};
 
-    function isPlaceholder(val){
-      return typeof val === 'string' && /^(PASTE_|YOUR_)/.test(val);
-    }
-    function looksLikeRealConfig(cfg){
-      if (!cfg) return false;
-      const keys = ['apiKey','authDomain','projectId','appId'];
-      for (const k of keys){ if (!cfg[k] || isPlaceholder(cfg[k])) return false; }
-      if (String(cfg.apiKey).length < 20) return false;
-      if (!/firebase(app)?\.com$/i.test(String(cfg.authDomain))) return false;
-      if (!/^(1:)?\d+:web:/i.test(String(cfg.appId)) && String(cfg.appId).length < 10) return false;
-      return true;
-    }
 
     // ---------- INITIALISE BACKEND ----------
     let app, auth, db, user;
@@ -693,5 +681,6 @@
   </script>
 </body>
 </html>
+
 
 
