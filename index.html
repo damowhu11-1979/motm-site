@@ -2,75 +2,185 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Man of the Match</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Man of the Match — Canvey Island FC</title>
+
+  <!-- Canvey Island FC colours: Yellow & Royal Blue -->
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#fafafa; color:#222; margin:0; padding:1.5rem; }
-    h1 { text-align:center; margin:0 0 1rem; }
-    section { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.08); margin:1rem auto; padding:1rem; max-width:720px; }
-    .row { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
-    input, button { font-size:1rem; padding:.6rem .75rem; border-radius:8px; border:1px solid #ddd; }
-    input { flex:1 1 220px; }
-    button { background:#000; color:#fff; border:none; cursor:pointer; }
-    button:hover { background:#333; }
-    #qr { margin-top:.75rem; }
-    .label { font-weight:600; margin:.25rem 0; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .muted { color:#666; font-size:.9rem; }
-    .err { background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
+    :root{
+      --yellow:#FFCC00;
+      --blue:#0057B7;
+      --blue-700:#00429b;
+      --bg:#f7f7f7;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow:0 2px 8px rgba(0,0,0,.08);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#111;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+    header{
+      background:linear-gradient(90deg,var(--yellow),#ffe680 50%,var(--yellow));
+      border-bottom:4px solid var(--blue);
+      padding:24px 16px;
+    }
+    .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+    h1{margin:0;font-size:2.2rem;letter-spacing:.2px;color:#111}
+    .subtitle{margin:.35rem 0 0;color:#222;opacity:.85}
+    .top-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+    .btn{
+      appearance:none;border:0;border-radius:999px;padding:.7rem 1.1rem;
+      font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform .05s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--blue);color:#fff}
+    .btn-primary:hover{background:var(--blue-700)}
+    .btn-outline{background:#fff;border:2px solid var(--blue);color:var(--blue)}
+    main{padding:22px 0}
+    .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
+    .card{
+      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;
+    }
+    .span-12{grid-column:span 12}
+    .span-6{grid-column:span 6}
+    .label{font-weight:700;margin-bottom:6px}
+    input,button{font-size:1rem}
+    input{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.65rem .75rem;
+      background:#fff;outline:none
+    }
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:.92rem}
+    .tag{background:var(--yellow);border:1px solid #dcb300;border-radius:999px;padding:.2rem .55rem;font-weight:700}
+    .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .list .head,.list .rowi{display:grid;grid-template-columns:72px 1fr 140px;align-items:center}
+    .list .head{background:#fafafa;color:#111;font-weight:700}
+    .list .cell{padding:.65rem .75rem;border-bottom:1px solid var(--border)}
+    .list .rowi:last-child .cell{border-bottom:0}
+    .vote-btn{border-radius:9px;border:1px solid var(--blue);color:#fff;background:var(--blue);padding:.45rem .7rem;font-weight:700;cursor:pointer}
+    .vote-btn:hover{background:var(--blue-700)}
+    .danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
+    .status{background:#eaffd6;border:1px solid #a3d677;border-radius:10px;padding:.6rem .75rem;margin-bottom:10px}
+    .qr{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .pill{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:.25rem .55rem;font-weight:700}
+    @media (max-width:900px){
+      .span-6{grid-column:span 12}
+      .list .head,.list .rowi{grid-template-columns:64px 1fr 120px}
+    }
   </style>
-  <!-- Optional QR library (if blocked, we auto-fallback to an <img>) -->
+
+  <!-- Optional QR library; we also have an automatic <img> fallback -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
-  <h1>Man of the Match</h1>
-
-  <section>
-    <div id="status">Connecting…</div>
-  </section>
-
-  <section>
-    <div class="label">Team setup</div>
-    <div class="row" style="margin:.25rem 0 0">
-      <input id="teamName" placeholder="Team name" />
-      <input id="matchCode" class="mono" placeholder="Match code" />
-      <button id="joinBtn" title="Join a match by code">Join</button>
-      <button id="newMatch" title="Create a new match and code">New match</button>
-      <button id="resetVotes" title="Clear all votes for this match">Reset votes</button>
+  <header>
+    <div class="wrap">
+      <div class="row" style="justify-content:space-between;align-items:flex-end">
+        <div>
+          <h1>Man of the Match</h1>
+          <div class="subtitle">Canvey Island FC — create a match, add players, share the link, and collect votes live.</div>
+        </div>
+        <div class="top-actions">
+          <button id="newMatch" class="btn btn-primary">New match</button>
+        </div>
+      </div>
     </div>
+  </header>
 
-    <div style="margin-top:1rem;">
-      <div class="label">Share link</div>
-      <input id="shareLink" class="mono" readonly style="width:100%" />
-      <div id="qr"></div>
-      <div id="qrMsg" class="muted"></div>
+  <main class="wrap">
+    <div id="onlineState" class="status">Connecting…</div>
+
+    <!-- Team & Join -->
+    <div class="grid">
+      <div class="card span-12">
+        <div class="grid" style="gap:14px;grid-template-columns:repeat(12,1fr)">
+          <div class="span-8">
+            <div class="label">Team name</div>
+            <input id="teamName" placeholder="e.g. Canvey Island FC" />
+          </div>
+          <div class="span-4">
+            <div class="label">Match code <span class="pill">joiners paste code</span></div>
+            <div class="row">
+              <input id="matchCode" class="mono" placeholder="———" />
+              <button id="joinBtn" class="btn btn-outline">Join</button>
+            </div>
+            <div class="muted" style="margin-top:6px">Paste a code to join, or click <b>New match</b> above.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Players -->
+      <div class="card span-6">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="label">Players</div>
+          <div id="playerCount" class="tag">0 players</div>
+        </div>
+        <div class="row" style="margin-bottom:10px">
+          <input id="pNum" class="mono" style="max-width:90px" placeholder="#" />
+          <input id="pName" placeholder="Player name" />
+          <button id="addPlayer" class="btn btn-primary">Add</button>
+        </div>
+        <div class="list" id="playersList">
+          <div class="head">
+            <div class="cell">#</div>
+            <div class="cell">Name</div>
+            <div class="cell">Actions</div>
+          </div>
+          <!-- rows injected -->
+        </div>
+        <div class="muted" style="margin-top:8px">Roster is saved locally and synced to the match so voters see the same list.</div>
+      </div>
+
+      <!-- Vote panel -->
+      <div class="card span-6">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="label">Vote</div>
+          <div id="voteState" class="pill">Not voted</div>
+        </div>
+        <div class="muted">Tap a player to cast or change your vote. One vote per device.</div>
+        <div id="voteList" style="margin-top:12px"></div>
+      </div>
+
+      <!-- Share -->
+      <div class="card span-12">
+        <div class="label">Share link</div>
+        <div class="qr">
+          <input id="shareLink" class="mono" readonly style="flex:1" />
+          <div id="qrBox" style="width:170px;min-height:170px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff"></div>
+        </div>
+        <div class="row" style="margin-top:10px;gap:8px">
+          <button id="copyLink" class="btn btn-outline">Copy link</button>
+          <button id="resetVotes" class="btn danger">Reset votes</button>
+        </div>
+      </div>
+
+      <!-- Live results -->
+      <div class="card span-12">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="label">Live results</div>
+          <div id="voteCount" class="tag">0 votes</div>
+        </div>
+        <div id="results"></div>
+      </div>
     </div>
-  </section>
-
-  <section>
-    <div class="label">Players</div>
-    <div id="playersList" class="muted">No players yet</div>
-  </section>
-
-  <section>
-    <div class="label">Votes</div>
-    <div id="voteList" class="muted">No votes yet</div>
-  </section>
+  </main>
 
   <!-- App logic -->
   <script type="module">
-    // Wait for DOM to exist
+    // Firebase (loaded dynamically after DOM ready)
     window.addEventListener('DOMContentLoaded', init);
 
-    async function init() {
-      // Import Firebase after DOM is ready
-      const [{ initializeApp }, firestorePkg] = await Promise.all([
+    async function init(){
+      const [{ initializeApp }, fspkg] = await Promise.all([
         import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
         import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js")
       ]);
-      const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = firestorePkg;
+      const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
 
-      // --- Your Firebase config ---
+      // --- Config (your real project) ---
       const firebaseConfig = {
         apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
         authDomain: "motm--pumas.firebaseapp.com",
@@ -81,139 +191,180 @@
       };
 
       // --- DOM refs ---
-      const teamNameInput = document.getElementById("teamName");
-      const matchCodeInput = document.getElementById("matchCode");
-      const playersList   = document.getElementById("playersList");
-      const voteList      = document.getElementById("voteList");
-      const newMatchBtn   = document.getElementById("newMatch");
-      const resetBtn      = document.getElementById("resetVotes");
-      const joinBtn       = document.getElementById("joinBtn");
-      const shareLink     = document.getElementById("shareLink");
-      const qrContainer   = document.getElementById("qr");
-      const qrMsg         = document.getElementById("qrMsg");
+      const onlineState = document.getElementById('onlineState');
+      const teamName = document.getElementById('teamName');
+      const matchCodeInput = document.getElementById('matchCode');
+      const playersList = document.getElementById('playersList');
+      const playerCount = document.getElementById('playerCount');
+      const voteList = document.getElementById('voteList');
+      const voteState = document.getElementById('voteState');
+      const shareLink = document.getElementById('shareLink');
+      const qrBox = document.getElementById('qrBox');
+      const results = document.getElementById('results');
+      const voteCount = document.getElementById('voteCount');
 
-      // --- Init Firebase ---
+      const btnNew = document.getElementById('newMatch');
+      const btnJoin = document.getElementById('joinBtn');
+      const btnAdd = document.getElementById('addPlayer');
+      const btnCopy = document.getElementById('copyLink');
+      const btnReset = document.getElementById('resetVotes');
+      const pNum = document.getElementById('pNum');
+      const pName = document.getElementById('pName');
+
+      // --- State ---
       const app = initializeApp(firebaseConfig);
       const db  = getFirestore(app);
+      const deviceId = getOrMakeId('motm_device_id'); // one vote per device
+      let code = null;
+      let unsub = null;
+      let localPlayers = [];
 
       // --- Utils ---
-      function makeCode(len = 6) {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let out = "";
-        for (let i = 0; i < len; i++) out += chars[(Math.random() * chars.length) | 0];
-        return out;
+      function getOrMakeId(key){
+        let v = localStorage.getItem(key);
+        if(!v){ v = crypto.randomUUID(); localStorage.setItem(key,v); }
+        return v;
       }
-      function setStatus() {
-        document.getElementById("status").textContent =
-          navigator.onLine
-            ? "🟢 You are online. Live syncing enabled."
-            : "🔴 You are offline. Changes will sync when back online.";
+      function makeCode(len=6){
+        const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let s=""; for(let i=0;i<len;i++) s += chars[(Math.random()*chars.length)|0];
+        return s;
       }
+      function setOnline(){
+        onlineState.textContent = navigator.onLine
+          ? "🟢 Online. Live syncing enabled."
+          : "🔴 Offline. Changes will sync when you're back online.";
+      }
+      window.addEventListener('online', setOnline);
+      window.addEventListener('offline', setOnline);
+      setOnline();
 
-      function renderQR(text) {
-        qrContainer.innerHTML = "";
-        // Try in-page library first
-        if (typeof window.QRCode === "function") {
-          try {
-            new window.QRCode(qrContainer, { text, width: 160, height: 160 });
-            qrMsg.className = "muted";
-            qrMsg.textContent = "Scan to join this match.";
-            return;
-          } catch {}
+      function renderQR(url){
+        qrBox.innerHTML = "";
+        if(typeof window.QRCode === "function"){
+          new window.QRCode(qrBox, { text:url, width:160, height:160 });
+        }else{
+          const img = new Image();
+          img.width=160; img.height=160; img.alt="QR";
+          img.src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+encodeURIComponent(url);
+          qrBox.appendChild(img);
         }
-        // Fallback to image-based QR if library is blocked
-        const img = new Image();
-        img.width = 160;
-        img.height = 160;
-        img.alt = "QR";
-        img.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(text);
-        qrContainer.appendChild(img);
-        qrMsg.className = "muted";
-        qrMsg.textContent = "QR rendered via fallback service.";
       }
-
-      function updateShareLink(code) {
+      function updateShare(){
+        if(!code) { shareLink.value=""; qrBox.innerHTML=""; return; }
         const url = `${location.origin}?match=${code}`;
         shareLink.value = url;
         renderQR(url);
       }
-
-      let currentCode = null;
-      let unsubscribe = null;
-
-      async function createMatch() {
-        const code = makeCode();
-        currentCode = code;
-        matchCodeInput.value = code;
-
-        await setDoc(doc(collection(db, "matches"), code), {
-          team: teamNameInput.value || "Untitled Team",
-          created: new Date().toISOString(),
-          players: [],
-          votes: {}
+      function setPlayers(list){
+        localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
+        playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
+        // table rows
+        playersList.querySelectorAll('.rowi').forEach(n=>n.remove());
+        localPlayers.forEach((p,idx)=>{
+          const row=document.createElement('div'); row.className='rowi';
+          row.innerHTML = `
+            <div class="cell mono">${p.number||""}</div>
+            <div class="cell">${p.name||""}</div>
+            <div class="cell"><button data-i="${idx}" class="vote-btn">Vote</button></div>`;
+          playersList.appendChild(row);
         });
-
-        updateShareLink(code);
-        listenForChanges(code);
-      }
-
-      async function joinMatch() {
-        const code = (matchCodeInput.value || "").trim().toUpperCase();
-        if (!code) { alert("Enter a match code"); return; }
-        currentCode = code;
-        updateShareLink(code);
-        listenForChanges(code);
-      }
-
-      function listenForChanges(code) {
-        if (unsubscribe) unsubscribe();
-        const ref = doc(db, "matches", code);
-        unsubscribe = onSnapshot(ref, (snap) => {
-          const data = snap.data();
-          if (!data) return;
-          teamNameInput.value = data.team || "";
-          renderPlayers(data.players || []);
-          renderVotes(data.votes || {});
+        // clickable vote buttons
+        playersList.querySelectorAll('.vote-btn').forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const i = +btn.dataset.i;
+            if(localPlayers[i]) castVote(localPlayers[i].name);
+          });
+        });
+        // vote list (tap to vote)
+        voteList.innerHTML = localPlayers.map(p=>`
+          <button class="vote-btn" data-name="${p.name}">${p.number?`${p.number}. `:""}${p.name}</button>
+        `).join(" ");
+        voteList.querySelectorAll('button').forEach(b=>{
+          b.addEventListener('click',()=>castVote(b.dataset.name));
         });
       }
-
-      function renderPlayers(players) {
-        playersList.innerHTML = players.length
-          ? players.map(p => `<div>${p.number}. ${p.name}</div>`).join("")
-          : "No players yet";
+      function renderResults(votes){
+        const counts={}; Object.values(votes||{}).forEach(v=>{ counts[v]=(counts[v]||0)+1; });
+        const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+        voteCount.textContent = `${Object.keys(votes||{}).length} vote${Object.keys(votes||{}).length===1?"":"s"}`;
+        results.innerHTML = arr.length
+          ? arr.map(([name,n])=>`<div style="padding:.35rem 0">${name}: <b>${n}</b></div>`).join("")
+          : `<div class="muted">No votes yet</div>`;
       }
 
-      function renderVotes(votes) {
-        const counts = {};
-        Object.values(votes).forEach(v => { counts[v] = (counts[v] || 0) + 1; });
-        const sorted = Object.entries(counts).sort((a,b)=> b[1]-a[1]);
-        voteList.innerHTML = sorted.length
-          ? sorted.map(([name, n]) => `<div>${name}: ${n} vote${n===1?"":"s"}</div>`).join("")
-          : "No votes yet";
+      async function castVote(name){
+        if(!code) return alert("Create or join a match first.");
+        const ref = doc(db,"matches",code);
+        const snap = await getDoc(ref);
+        const data = snap.data() || {};
+        const votes = data.votes || {};
+        votes[deviceId] = name;
+        await setDoc(ref,{ votes },{ merge:true });
+        voteState.textContent = "Voted";
       }
 
-      async function resetVotes() {
-        if (!currentCode) { alert("No match active"); return; }
-        await setDoc(doc(collection(db, "matches"), currentCode), { votes: {} }, { merge: true });
+      async function createMatch(){
+        code = makeCode(); matchCodeInput.value = code;
+        const ref = doc(db,"matches",code);
+        await setDoc(ref,{ team: teamName.value || "Canvey Island FC", players:[], votes:{}, created:new Date().toISOString() });
+        localStorage.setItem("motm_last_code", code);
+        subscribe(code);
+        updateShare();
+      }
+      async function joinMatch(){
+        const c = (matchCodeInput.value||"").trim().toUpperCase();
+        if(!c) return alert("Enter a match code");
+        code = c; localStorage.setItem("motm_last_code", code);
+        subscribe(code);
+        updateShare();
+      }
+      function subscribe(c){
+        if(unsub) unsub();
+        const ref = doc(db,"matches",c);
+        unsub = onSnapshot(ref,(snap)=>{
+          const d=snap.data()||{};
+          teamName.value = d.team || "";
+          setPlayers(d.players || []);
+          renderResults(d.votes || {});
+        });
       }
 
-      // Events
-      newMatchBtn.addEventListener("click", createMatch);
-      joinBtn.addEventListener("click", joinMatch);
-      resetBtn.addEventListener("click", resetVotes);
+      // Add/remove players (local first, then sync)
+      btnAdd.addEventListener('click', async ()=>{
+        if(!code) return alert("Create or join a match first.");
+        const number = pNum.value.trim(); const name = pName.value.trim();
+        if(!name) return alert("Enter a player name");
+        const ref = doc(db,"matches",code);
+        const snap = await getDoc(ref);
+        const d = snap.data()||{};
+        const players = d.players||[];
+        players.push({ number, name });
+        await setDoc(ref,{ players },{ merge:true });
+        pNum.value=""; pName.value=""; pNum.focus();
+      });
 
-      window.addEventListener("online", setStatus);
-      window.addEventListener("offline", setStatus);
-      setStatus();
+      btnCopy.addEventListener('click',()=>{
+        if(!shareLink.value) return;
+        navigator.clipboard.writeText(shareLink.value);
+        btnCopy.textContent="Copied!"; setTimeout(()=>btnCopy.textContent="Copy link",1200);
+      });
 
-      // If arriving with ?match=CODE, auto-join
-      const params = new URLSearchParams(location.search);
-      const incoming = (params.get("match") || "").toUpperCase();
-      if (incoming) {
-        matchCodeInput.value = incoming;
-        updateShareLink(incoming);
-        listenForChanges(incoming);
-      }
+      btnReset.addEventListener('click', async ()=>{
+        if(!code) return alert("No match active");
+        if(!confirm("Reset all votes for this match?")) return;
+        await updateDoc(doc(db,"matches",code),{ votes:{} });
+      });
+
+      btnNew.addEventListener('click', createMatch);
+      btnJoin.addEventListener('click', joinMatch);
+
+      // Auto-join via URL or last session
+      const qs = new URLSearchParams(location.search);
+      const incoming = (qs.get("match")||"").toUpperCase();
+      const last = localStorage.getItem("motm_last_code")||"";
+      if(incoming){ matchCodeInput.value = incoming; joinMatch(); }
+      else if(last){ matchCodeInput.value = last; joinMatch(); }
     }
   </script>
 </body>
