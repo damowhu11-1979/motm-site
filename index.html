@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Man of the Match — Canvey Island FC</title>
 
-  <!-- Canvey Island FC styling -->
   <style>
     :root{
       --yellow:#FFCC00;
@@ -23,12 +22,13 @@
     header{
       background:linear-gradient(90deg,var(--yellow),#ffe680 50%,var(--yellow));
       border-bottom:4px solid var(--blue);
-      padding:24px 16px;
+      padding:18px 16px 24px;
     }
     .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
-    h1{margin:0;font-size:2.2rem;letter-spacing:.2px;color:#111}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    h1{margin:8px 0 0;font-size:2.2rem;letter-spacing:.2px;color:#111}
     .subtitle{margin:.35rem 0 0;color:#222;opacity:.85}
-    .top-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px}
+    .top-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
     .btn{
       appearance:none;border:0;border-radius:999px;padding:.7rem 1.1rem;
       font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform .05s ease;
@@ -39,24 +39,21 @@
     .btn-outline{background:#fff;border:2px solid var(--blue);color:var(--blue)}
     .btn-danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
 
+    input,button{font-size:1rem}
+    input{
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem .9rem;background:#fff;outline:none
+    }
+    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
+    #teamName{font-size:1.15rem;padding:1rem .95rem}
+
     main{padding:22px 0}
     .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
-    .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;
-    }
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;}
     .span-12{grid-column:span 12}
     .span-6{grid-column:span 6}
     .label{font-weight:700;margin-bottom:6px}
-    input,button{font-size:1rem}
-    input{
-      width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem .85rem;
-      background:#fff;outline:none
-    }
-    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .muted{color:var(--muted);font-size:.92rem}
     .tag{background:var(--yellow);border:1px solid #dcb300;border-radius:999px;padding:.2rem .55rem;font-weight:700}
-    .badge-sq{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:.25rem .5rem;font-weight:700}
     .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .list .head,.list .rowi{display:grid;grid-template-columns:72px 1fr 140px;align-items:center}
     .list .head{background:#fafafa;color:#111;font-weight:700}
@@ -67,22 +64,27 @@
     .status{background:#eaffd6;border:1px solid #a3d677;border-radius:10px;padding:.6rem .75rem;margin-bottom:10px}
     .qrbox{width:180px;min-height:180px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .code-group{display:grid;gap:10px;grid-template-columns:1fr auto;align-items:center}
+    .code-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
     @media (max-width:900px){
       .span-6{grid-column:span 12}
       .list .head,.list .rowi{grid-template-columns:64px 1fr 120px}
+      .code-group{grid-template-columns:1fr}
     }
-
-    /* Bigger team name input */
-    #teamName{font-size:1.15rem;padding:1rem .95rem}
   </style>
 
-  <!-- Optional QR library; we also have an automatic <img> fallback -->
+  <!-- Optional QR library (auto-fallback to <img> if blocked) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <div class="row" style="justify-content:space-between;align-items:flex-end">
+      <!-- Team name moved above title -->
+      <div class="label" style="margin:0 0 6px">Team name</div>
+      <input id="teamName" placeholder="e.g. Canvey Island FC" />
+
+      <div class="row" style="justify-content:space-between;align-items:flex-end;margin-top:10px">
         <div>
           <h1>Man of the Match</h1>
           <div class="subtitle">Canvey Island FC — create a match, add players, share the link, and collect votes live.</div>
@@ -97,38 +99,30 @@
   <main class="wrap">
     <div id="onlineState" class="status">Connecting…</div>
 
-    <!-- Share link moved to the top -->
+    <!-- Share + Match code in the same card -->
     <div class="card span-12" style="margin-bottom:18px">
-      <div class="label">Share link</div>
-      <div class="row" style="align-items:flex-start">
-        <input id="shareLink" class="mono" readonly style="flex:1" />
+      <div class="grid" style="grid-template-columns:1fr 200px; gap:16px; align-items:start">
+        <div>
+          <div class="label">Share link</div>
+          <div class="code-group">
+            <input id="shareLink" class="mono" readonly />
+            <button id="copyLink" class="btn btn-outline">Copy link</button>
+          </div>
+
+          <div class="label" style="margin-top:14px">Match code</div>
+          <div class="code-row">
+            <input id="matchCode" class="mono" placeholder="———" style="max-width:220px" />
+            <button id="joinBtn" class="btn btn-outline">Join</button>
+            <button id="resetVotes" class="btn btn-danger">Reset votes</button>
+          </div>
+          <div class="muted" style="margin-top:6px">Paste a code to join, or click <b>New match</b> above to start one.</div>
+        </div>
+
         <div id="qrBox" class="qrbox"></div>
-      </div>
-      <div class="row" style="margin-top:10px;gap:8px">
-        <button id="copyLink" class="btn btn-outline">Copy link</button>
-        <button id="resetVotes" class="btn btn-danger">Reset votes</button>
       </div>
     </div>
 
-    <!-- Team / Join / Players / Vote / Results -->
     <div class="grid">
-      <div class="card span-12">
-        <div class="grid" style="gap:14px;grid-template-columns:repeat(12,1fr)">
-          <div class="span-8">
-            <div class="label">Team name</div>
-            <input id="teamName" placeholder="e.g. Canvey Island FC" />
-          </div>
-          <div class="span-4">
-            <div class="label">Match code <span class="badge-sq">joiners paste code</span></div>
-            <div class="row">
-              <input id="matchCode" class="mono" placeholder="———" />
-              <button id="joinBtn" class="btn btn-outline">Join</button>
-            </div>
-            <div class="muted" style="margin-top:6px">Paste a code to join, or click <b>New match</b> above.</div>
-          </div>
-        </div>
-      </div>
-
       <!-- Players -->
       <div class="card span-6">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -146,7 +140,6 @@
             <div class="cell">Name</div>
             <div class="cell">Actions</div>
           </div>
-          <!-- rows injected -->
         </div>
         <div class="muted" style="margin-top:8px">Roster is saved locally and synced to the match so voters see the same list.</div>
       </div>
@@ -172,7 +165,6 @@
     </div>
   </main>
 
-  <!-- App logic -->
   <script type="module">
     window.addEventListener('DOMContentLoaded', init);
 
@@ -183,7 +175,6 @@
       ]);
       const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
 
-      // Firebase config (your project)
       const firebaseConfig = {
         apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
         authDomain: "motm--pumas.firebaseapp.com",
@@ -245,11 +236,11 @@
       function renderQR(url){
         qrBox.innerHTML = "";
         if(typeof window.QRCode === "function"){
-          new window.QRCode(qrBox, { text:url, width:170, height:170 });
+          new window.QRCode(qrBox, { text:url, width:180, height:180 });
         }else{
           const img = new Image();
-          img.width=170; img.height=170; img.alt="QR";
-          img.src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data="+encodeURIComponent(url);
+          img.width=180; img.height=180; img.alt="QR";
+          img.src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
           qrBox.appendChild(img);
         }
       }
