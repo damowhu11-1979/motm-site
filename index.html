@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Man of the Match — Canvey Island FC</title>
 
-  <!-- Canvey Island FC colours: Yellow & Royal Blue -->
+  <!-- Canvey Island FC styling -->
   <style>
     :root{
       --yellow:#FFCC00;
@@ -37,6 +37,8 @@
     .btn-primary{background:var(--blue);color:#fff}
     .btn-primary:hover{background:var(--blue-700)}
     .btn-outline{background:#fff;border:2px solid var(--blue);color:var(--blue)}
+    .btn-danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
+
     main{padding:22px 0}
     .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
     .card{
@@ -47,13 +49,14 @@
     .label{font-weight:700;margin-bottom:6px}
     input,button{font-size:1rem}
     input{
-      width:100%;border:1px solid var(--border);border-radius:10px;padding:.65rem .75rem;
+      width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem .85rem;
       background:#fff;outline:none
     }
     input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .muted{color:var(--muted);font-size:.92rem}
     .tag{background:var(--yellow);border:1px solid #dcb300;border-radius:999px;padding:.2rem .55rem;font-weight:700}
+    .badge-sq{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:8px;padding:.25rem .5rem;font-weight:700}
     .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .list .head,.list .rowi{display:grid;grid-template-columns:72px 1fr 140px;align-items:center}
     .list .head{background:#fafafa;color:#111;font-weight:700}
@@ -61,15 +64,16 @@
     .list .rowi:last-child .cell{border-bottom:0}
     .vote-btn{border-radius:9px;border:1px solid var(--blue);color:#fff;background:var(--blue);padding:.45rem .7rem;font-weight:700;cursor:pointer}
     .vote-btn:hover{background:var(--blue-700)}
-    .danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
     .status{background:#eaffd6;border:1px solid #a3d677;border-radius:10px;padding:.6rem .75rem;margin-bottom:10px}
-    .qr{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    .qrbox{width:180px;min-height:180px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .pill{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:.25rem .55rem;font-weight:700}
     @media (max-width:900px){
       .span-6{grid-column:span 12}
       .list .head,.list .rowi{grid-template-columns:64px 1fr 120px}
     }
+
+    /* Bigger team name input */
+    #teamName{font-size:1.15rem;padding:1rem .95rem}
   </style>
 
   <!-- Optional QR library; we also have an automatic <img> fallback -->
@@ -93,7 +97,20 @@
   <main class="wrap">
     <div id="onlineState" class="status">Connecting…</div>
 
-    <!-- Team & Join -->
+    <!-- Share link moved to the top -->
+    <div class="card span-12" style="margin-bottom:18px">
+      <div class="label">Share link</div>
+      <div class="row" style="align-items:flex-start">
+        <input id="shareLink" class="mono" readonly style="flex:1" />
+        <div id="qrBox" class="qrbox"></div>
+      </div>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button id="copyLink" class="btn btn-outline">Copy link</button>
+        <button id="resetVotes" class="btn btn-danger">Reset votes</button>
+      </div>
+    </div>
+
+    <!-- Team / Join / Players / Vote / Results -->
     <div class="grid">
       <div class="card span-12">
         <div class="grid" style="gap:14px;grid-template-columns:repeat(12,1fr)">
@@ -102,7 +119,7 @@
             <input id="teamName" placeholder="e.g. Canvey Island FC" />
           </div>
           <div class="span-4">
-            <div class="label">Match code <span class="pill">joiners paste code</span></div>
+            <div class="label">Match code <span class="badge-sq">joiners paste code</span></div>
             <div class="row">
               <input id="matchCode" class="mono" placeholder="———" />
               <button id="joinBtn" class="btn btn-outline">Join</button>
@@ -138,23 +155,10 @@
       <div class="card span-6">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
           <div class="label">Vote</div>
-          <div id="voteState" class="pill">Not voted</div>
+          <div id="voteState" class="tag" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">Not voted</div>
         </div>
         <div class="muted">Tap a player to cast or change your vote. One vote per device.</div>
         <div id="voteList" style="margin-top:12px"></div>
-      </div>
-
-      <!-- Share -->
-      <div class="card span-12">
-        <div class="label">Share link</div>
-        <div class="qr">
-          <input id="shareLink" class="mono" readonly style="flex:1" />
-          <div id="qrBox" style="width:170px;min-height:170px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff"></div>
-        </div>
-        <div class="row" style="margin-top:10px;gap:8px">
-          <button id="copyLink" class="btn btn-outline">Copy link</button>
-          <button id="resetVotes" class="btn danger">Reset votes</button>
-        </div>
       </div>
 
       <!-- Live results -->
@@ -170,7 +174,6 @@
 
   <!-- App logic -->
   <script type="module">
-    // Firebase (loaded dynamically after DOM ready)
     window.addEventListener('DOMContentLoaded', init);
 
     async function init(){
@@ -180,7 +183,7 @@
       ]);
       const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
 
-      // --- Config (your real project) ---
+      // Firebase config (your project)
       const firebaseConfig = {
         apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
         authDomain: "motm--pumas.firebaseapp.com",
@@ -190,7 +193,7 @@
         appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
       };
 
-      // --- DOM refs ---
+      // DOM refs
       const onlineState = document.getElementById('onlineState');
       const teamName = document.getElementById('teamName');
       const matchCodeInput = document.getElementById('matchCode');
@@ -211,15 +214,15 @@
       const pNum = document.getElementById('pNum');
       const pName = document.getElementById('pName');
 
-      // --- State ---
+      // State
       const app = initializeApp(firebaseConfig);
       const db  = getFirestore(app);
-      const deviceId = getOrMakeId('motm_device_id'); // one vote per device
+      const deviceId = getOrMakeId('motm_device_id');
       let code = null;
       let unsub = null;
       let localPlayers = [];
 
-      // --- Utils ---
+      // Utils
       function getOrMakeId(key){
         let v = localStorage.getItem(key);
         if(!v){ v = crypto.randomUUID(); localStorage.setItem(key,v); }
@@ -242,11 +245,11 @@
       function renderQR(url){
         qrBox.innerHTML = "";
         if(typeof window.QRCode === "function"){
-          new window.QRCode(qrBox, { text:url, width:160, height:160 });
+          new window.QRCode(qrBox, { text:url, width:170, height:170 });
         }else{
           const img = new Image();
-          img.width=160; img.height=160; img.alt="QR";
-          img.src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+encodeURIComponent(url);
+          img.width=170; img.height=170; img.alt="QR";
+          img.src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data="+encodeURIComponent(url);
           qrBox.appendChild(img);
         }
       }
@@ -256,54 +259,8 @@
         shareLink.value = url;
         renderQR(url);
       }
-      function setPlayers(list){
-        localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
-        playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
-        // table rows
-        playersList.querySelectorAll('.rowi').forEach(n=>n.remove());
-        localPlayers.forEach((p,idx)=>{
-          const row=document.createElement('div'); row.className='rowi';
-          row.innerHTML = `
-            <div class="cell mono">${p.number||""}</div>
-            <div class="cell">${p.name||""}</div>
-            <div class="cell"><button data-i="${idx}" class="vote-btn">Vote</button></div>`;
-          playersList.appendChild(row);
-        });
-        // clickable vote buttons
-        playersList.querySelectorAll('.vote-btn').forEach(btn=>{
-          btn.addEventListener('click',()=>{
-            const i = +btn.dataset.i;
-            if(localPlayers[i]) castVote(localPlayers[i].name);
-          });
-        });
-        // vote list (tap to vote)
-        voteList.innerHTML = localPlayers.map(p=>`
-          <button class="vote-btn" data-name="${p.name}">${p.number?`${p.number}. `:""}${p.name}</button>
-        `).join(" ");
-        voteList.querySelectorAll('button').forEach(b=>{
-          b.addEventListener('click',()=>castVote(b.dataset.name));
-        });
-      }
-      function renderResults(votes){
-        const counts={}; Object.values(votes||{}).forEach(v=>{ counts[v]=(counts[v]||0)+1; });
-        const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-        voteCount.textContent = `${Object.keys(votes||{}).length} vote${Object.keys(votes||{}).length===1?"":"s"}`;
-        results.innerHTML = arr.length
-          ? arr.map(([name,n])=>`<div style="padding:.35rem 0">${name}: <b>${n}</b></div>`).join("")
-          : `<div class="muted">No votes yet</div>`;
-      }
 
-      async function castVote(name){
-        if(!code) return alert("Create or join a match first.");
-        const ref = doc(db,"matches",code);
-        const snap = await getDoc(ref);
-        const data = snap.data() || {};
-        const votes = data.votes || {};
-        votes[deviceId] = name;
-        await setDoc(ref,{ votes },{ merge:true });
-        voteState.textContent = "Voted";
-      }
-
+      // Core actions
       async function createMatch(){
         code = makeCode(); matchCodeInput.value = code;
         const ref = doc(db,"matches",code);
@@ -330,10 +287,60 @@
         });
       }
 
-      // Add/remove players (local first, then sync)
-      btnAdd.addEventListener('click', async ()=>{
+      // Players
+      function setPlayers(list){
+        localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
+        playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
+        playersList.querySelectorAll('.rowi').forEach(n=>n.remove());
+        localPlayers.forEach((p,idx)=>{
+          const row=document.createElement('div'); row.className='rowi';
+          row.style.display='grid'; row.style.gridTemplateColumns='72px 1fr 140px';
+          row.style.alignItems='center';
+          row.innerHTML = `
+            <div class="cell mono">${p.number||""}</div>
+            <div class="cell">${p.name||""}</div>
+            <div class="cell"><button data-i="${idx}" class="vote-btn">Vote</button></div>`;
+          playersList.appendChild(row);
+        });
+        playersList.querySelectorAll('.vote-btn').forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const i = +btn.dataset.i;
+            if(localPlayers[i]) castVote(localPlayers[i].name);
+          });
+        });
+        voteList.innerHTML = localPlayers.map(p=>`
+          <button class="vote-btn" data-name="${p.name}">${p.number?`${p.number}. `:""}${p.name}</button>
+        `).join(" ");
+        voteList.querySelectorAll('button').forEach(b=>{
+          b.addEventListener('click',()=>castVote(b.dataset.name));
+        });
+      }
+
+      function renderResults(votes){
+        const counts={}; Object.values(votes||{}).forEach(v=>{ counts[v]=(counts[v]||0)+1; });
+        const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+        voteCount.textContent = `${Object.keys(votes||{}).length} vote${Object.keys(votes||{}).length===1?"":"s"}`;
+        results.innerHTML = arr.length
+          ? arr.map(([name,n])=>`<div style="padding:.35rem 0">${name}: <b>${n}</b></div>`).join("")
+          : `<div class="muted">No votes yet</div>`;
+      }
+
+      async function castVote(name){
         if(!code) return alert("Create or join a match first.");
-        const number = pNum.value.trim(); const name = pName.value.trim();
+        const ref = doc(db,"matches",code);
+        const snap = await getDoc(ref);
+        const data = snap.data() || {};
+        const votes = data.votes || {};
+        votes[deviceId] = name;
+        await setDoc(ref,{ votes },{ merge:true });
+        voteState.textContent = "Voted";
+      }
+
+      // Event bindings
+      document.getElementById('addPlayer').addEventListener('click', async ()=>{
+        if(!code) return alert("Create or join a match first.");
+        const number = document.getElementById('pNum').value.trim();
+        const name = document.getElementById('pName').value.trim();
         if(!name) return alert("Enter a player name");
         const ref = doc(db,"matches",code);
         const snap = await getDoc(ref);
@@ -341,7 +348,9 @@
         const players = d.players||[];
         players.push({ number, name });
         await setDoc(ref,{ players },{ merge:true });
-        pNum.value=""; pName.value=""; pNum.focus();
+        document.getElementById('pNum').value="";
+        document.getElementById('pName').value="";
+        document.getElementById('pNum').focus();
       });
 
       btnCopy.addEventListener('click',()=>{
