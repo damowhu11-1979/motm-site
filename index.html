@@ -4,218 +4,218 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Man of the Match</title>
-
-  <!-- QRCode generator -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      doc,
-      setDoc,
-      getDoc,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    // ✅ Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
-      authDomain: "motm--pumas.firebaseapp.com",
-      projectId: "motm--pumas",
-      storageBucket: "motm--pumas.firebasestorage.app",
-      messagingSenderId: "953454926915",
-      appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Utility for random code
-    function makeCode(len = 6) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let result = "";
-      for (let i = 0; i < len; i++) result += chars[Math.floor(Math.random() * chars.length)];
-      return result;
-    }
-
-    const teamNameInput = document.getElementById("teamName");
-    const matchCodeInput = document.getElementById("matchCode");
-    const playersList = document.getElementById("playersList");
-    const voteList = document.getElementById("voteList");
-    const newMatchBtn = document.getElementById("newMatch");
-    const resetBtn = document.getElementById("resetVotes");
-    const joinBtn = document.getElementById("joinBtn");
-    const shareLink = document.getElementById("shareLink");
-    const qrContainer = document.getElementById("qr");
-
-    let currentCode = null;
-    let unsubscribe = null;
-
-    async function createMatch() {
-      const code = makeCode();
-      currentCode = code;
-      matchCodeInput.value = code;
-
-      await setDoc(doc(collection(db, "matches"), code), {
-        team: teamNameInput.value || "Untitled Team",
-        created: new Date().toISOString(),
-        players: [],
-        votes: {}
-      });
-
-      updateShareLink(code);
-      listenForChanges(code);
-    }
-
-    function updateShareLink(code) {
-      const url = `${location.origin}?match=${code}`;
-      shareLink.value = url;
-      qrContainer.innerHTML = "";
-      new QRCode(qrContainer, { text: url, width: 128, height: 128 });
-    }
-
-    async function joinMatch() {
-      const code = matchCodeInput.value.trim().toUpperCase();
-      if (!code) return alert("Enter a match code");
-      currentCode = code;
-      listenForChanges(code);
-      updateShareLink(code);
-    }
-
-    function listenForChanges(code) {
-      if (unsubscribe) unsubscribe();
-      const ref = doc(db, "matches", code);
-      unsubscribe = onSnapshot(ref, (snap) => {
-        const data = snap.data();
-        if (!data) return;
-        teamNameInput.value = data.team;
-        renderPlayers(data.players || []);
-        renderVotes(data.votes || {});
-      });
-    }
-
-    function renderPlayers(players) {
-      playersList.innerHTML = players
-        .map((p) => `<div>${p.number}. ${p.name}</div>`)
-        .join("");
-    }
-
-    function renderVotes(votes) {
-      const counts = {};
-      Object.values(votes).forEach((v) => {
-        counts[v] = (counts[v] || 0) + 1;
-      });
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-      voteList.innerHTML = sorted
-        .map(([name, count]) => `<div>${name}: ${count} votes</div>`)
-        .join("");
-    }
-
-    async function resetVotes() {
-      if (!currentCode) return alert("No match active");
-      await setDoc(
-        doc(collection(db, "matches"), currentCode),
-        { votes: {} },
-        { merge: true }
-      );
-    }
-
-    // UI event handlers
-    newMatchBtn.onclick = createMatch;
-    joinBtn.onclick = joinMatch;
-    resetBtn.onclick = resetVotes;
-
-    // Online indicator
-    window.addEventListener("online", () => {
-      document.getElementById("status").textContent = "🟢 You are online. Live syncing enabled.";
-    });
-    window.addEventListener("offline", () => {
-      document.getElementById("status").textContent = "🔴 You are offline. Changes will sync when back online.";
-    });
-
-    document.getElementById("status").textContent = navigator.onLine
-      ? "🟢 You are online. Live syncing enabled."
-      : "🔴 You are offline. Changes will sync when back online.";
-  </script>
-
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: #fafafa;
-      color: #222;
-      margin: 0;
-      padding: 1.5rem;
-    }
-    h1 {
-      text-align: center;
-    }
-    section {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin: 1rem auto;
-      padding: 1rem;
-      max-width: 700px;
-    }
-    input, button {
-      font-size: 1rem;
-      padding: 0.5rem;
-      margin: 0.3rem;
-    }
-    button {
-      border: none;
-      border-radius: 6px;
-      background: #000;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #333;
-    }
-    #qr {
-      margin-top: 0.5rem;
-    }
-    .section-title {
-      font-weight: bold;
-      margin-top: 1rem;
-    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#fafafa; color:#222; margin:0; padding:1.5rem; }
+    h1 { text-align:center; margin:0 0 1rem; }
+    section { background:#fff; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,.08); margin:1rem auto; padding:1rem; max-width:720px; }
+    .row { display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+    input, button { font-size:1rem; padding:.6rem .75rem; border-radius:8px; border:1px solid #ddd; }
+    input { flex:1 1 220px; }
+    button { background:#000; color:#fff; border:none; cursor:pointer; }
+    button:hover { background:#333; }
+    #qr { margin-top:.75rem; }
+    .label { font-weight:600; margin:.25rem 0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .muted { color:#666; font-size:.9rem; }
+    .ok { background:#e8f5e9; border:1px solid #43a047; color:#2e7d32; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
+    .warn { background:#fff8e1; border:1px solid #f59e0b; color:#92400e; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
+    .err { background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
   </style>
+  <!-- QRCode library (global window.QRCode) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <!-- Firebase SDKs (modules) -->
+  <script type="module" defer src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+  <script type="module" defer src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
 </head>
 <body>
   <h1>Man of the Match</h1>
 
   <section>
-    <div id="status">Connecting...</div>
+    <div id="status">Connecting…</div>
   </section>
 
   <section>
-    <div class="section-title">Team setup</div>
-    <input id="teamName" placeholder="Team name" />
-    <input id="matchCode" placeholder="Match code" />
-    <button id="joinBtn">Join</button>
-    <button id="newMatch">New match</button>
-    <button id="resetVotes">Reset votes</button>
+    <div class="label">Team setup</div>
+    <div class="row" style="margin:.25rem 0 0">
+      <input id="teamName" placeholder="Team name" />
+      <input id="matchCode" class="mono" placeholder="Match code" />
+      <button id="joinBtn" title="Join a match by code">Join</button>
+      <button id="newMatch" title="Create a new match and code">New match</button>
+      <button id="resetVotes" title="Clear all votes for this match">Reset votes</button>
+    </div>
 
     <div style="margin-top:1rem;">
-      <div>Share link:</div>
-      <input id="shareLink" readonly style="width:90%" />
+      <div class="label">Share link</div>
+      <input id="shareLink" class="mono" readonly style="width:100%" />
       <div id="qr"></div>
+      <div id="qrMsg" class="muted"></div>
     </div>
   </section>
 
   <section>
-    <div class="section-title">Players</div>
-    <div id="playersList">No players yet</div>
+    <div class="label">Players</div>
+    <div id="playersList" class="muted">No players yet</div>
   </section>
 
   <section>
-    <div class="section-title">Votes</div>
-    <div id="voteList">No votes yet</div>
+    <div class="label">Votes</div>
+    <div id="voteList" class="muted">No votes yet</div>
   </section>
+
+  <!-- App logic -->
+  <script type="module">
+    // Wait for the HTML to be parsed so #qr and other elements exist
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Import Firebase ESM modules after DOM is ready
+      const [{ initializeApp }, firestorePkg] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js")
+      ]);
+
+      const {
+        getFirestore, collection, doc, setDoc, getDoc, onSnapshot
+      } = firestorePkg;
+
+      // --- Firebase config (yours) ---
+      const firebaseConfig = {
+        apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
+        authDomain: "motm--pumas.firebaseapp.com",
+        projectId: "motm--pumas",
+        storageBucket: "motm--pumas.firebasestorage.app",
+        messagingSenderId: "953454926915",
+        appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
+      };
+
+      // --- DOM refs (now they exist) ---
+      const teamNameInput = document.getElementById("teamName");
+      const matchCodeInput = document.getElementById("matchCode");
+      const playersList = document.getElementById("playersList");
+      const voteList = document.getElementById("voteList");
+      const newMatchBtn = document.getElementById("newMatch");
+      const resetBtn = document.getElementById("resetVotes");
+      const joinBtn = document.getElementById("joinBtn");
+      const shareLink = document.getElementById("shareLink");
+      const qrContainer = document.getElementById("qr");
+      const qrMsg = document.getElementById("qrMsg");
+
+      // --- Init Firebase ---
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // --- Utils ---
+      function makeCode(len = 6) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let out = "";
+        for (let i = 0; i < len; i++) out += chars[(Math.random() * chars.length) | 0];
+        return out;
+      }
+      function setStatus() {
+        document.getElementById("status").textContent =
+          navigator.onLine
+            ? "🟢 You are online. Live syncing enabled."
+            : "🔴 You are offline. Changes will sync when back online.";
+      }
+      function ensureQRLib() {
+        if (typeof window.QRCode !== "function") {
+          qrMsg.className = "err";
+          qrMsg.textContent = "QR library failed to load. Please refresh, or check your network/content blockers.";
+          return false;
+        }
+        return true;
+      }
+
+      let currentCode = null;
+      let unsubscribe = null;
+
+      async function createMatch() {
+        const code = makeCode();
+        currentCode = code;
+        matchCodeInput.value = code;
+
+        await setDoc(doc(collection(db, "matches"), code), {
+          team: teamNameInput.value || "Untitled Team",
+          created: new Date().toISOString(),
+          players: [],
+          votes: {}
+        });
+
+        updateShareLink(code);
+        listenForChanges(code);
+      }
+
+      function updateShareLink(code) {
+        const url = `${location.origin}?match=${code}`;
+        shareLink.value = url;
+
+        // (Re)render QR
+        qrContainer.innerHTML = "";
+        if (!ensureQRLib()) return;
+        new window.QRCode(qrContainer, { text: url, width: 160, height: 160 });
+        qrMsg.className = "muted";
+        qrMsg.textContent = "Tip: share this QR or link so others can join from their phones.";
+      }
+
+      async function joinMatch() {
+        const code = (matchCodeInput.value || "").trim().toUpperCase();
+        if (!code) { alert("Enter a match code"); return; }
+        currentCode = code;
+        updateShareLink(code);
+        listenForChanges(code);
+      }
+
+      function listenForChanges(code) {
+        if (unsubscribe) unsubscribe();
+        const ref = doc(db, "matches", code);
+        unsubscribe = onSnapshot(ref, (snap) => {
+          const data = snap.data();
+          if (!data) return;
+          teamNameInput.value = data.team || "";
+          renderPlayers(data.players || []);
+          renderVotes(data.votes || {});
+        });
+      }
+
+      function renderPlayers(players) {
+        playersList.innerHTML = players.length
+          ? players.map(p => `<div>${p.number}. ${p.name}</div>`).join("")
+          : "No players yet";
+      }
+
+      function renderVotes(votes) {
+        const counts = {};
+        Object.values(votes).forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+        const sorted = Object.entries(counts).sort((a,b)=> b[1]-a[1]);
+        voteList.innerHTML = sorted.length
+          ? sorted.map(([name, n]) => `<div>${name}: ${n} vote${n===1?"":"s"}</div>`).join("")
+          : "No votes yet";
+      }
+
+      async function resetVotes() {
+        if (!currentCode) { alert("No match active"); return; }
+        await setDoc(doc(collection(db, "matches"), currentCode), { votes: {} }, { merge: true });
+      }
+
+      // Events
+      newMatchBtn.addEventListener("click", createMatch);
+      joinBtn.addEventListener("click", joinMatch);
+      resetBtn.addEventListener("click", resetVotes);
+
+      window.addEventListener("online", setStatus);
+      window.addEventListener("offline", setStatus);
+      setStatus();
+
+      // If arriving with ?match=CODE, auto-join
+      const params = new URLSearchParams(location.search);
+      const incoming = (params.get("match") || "").toUpperCase();
+      if (incoming) {
+        matchCodeInput.value = incoming;
+        updateShareLink(incoming);
+        listenForChanges(incoming);
+      }
+    });
+  </script>
 </body>
 </html>
+
 
 
