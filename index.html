@@ -17,15 +17,10 @@
     .label { font-weight:600; margin:.25rem 0; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .muted { color:#666; font-size:.9rem; }
-    .ok { background:#e8f5e9; border:1px solid #43a047; color:#2e7d32; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
-    .warn { background:#fff8e1; border:1px solid #f59e0b; color:#92400e; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
     .err { background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:.6rem .75rem; border-radius:8px; margin:.5rem 0; }
   </style>
-  <!-- QRCode library (global window.QRCode) -->
+  <!-- Optional QR library (if blocked, we auto-fallback to an <img>) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-  <!-- Firebase SDKs (modules) -->
-  <script type="module" defer src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-  <script type="module" defer src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
 </head>
 <body>
   <h1>Man of the Match</h1>
@@ -64,19 +59,18 @@
 
   <!-- App logic -->
   <script type="module">
-    // Wait for the HTML to be parsed so #qr and other elements exist
-    window.addEventListener('DOMContentLoaded', async () => {
-      // Import Firebase ESM modules after DOM is ready
+    // Wait for DOM to exist
+    window.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      // Import Firebase after DOM is ready
       const [{ initializeApp }, firestorePkg] = await Promise.all([
         import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
         import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js")
       ]);
+      const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } = firestorePkg;
 
-      const {
-        getFirestore, collection, doc, setDoc, getDoc, onSnapshot
-      } = firestorePkg;
-
-      // --- Firebase config (yours) ---
+      // --- Your Firebase config ---
       const firebaseConfig = {
         apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
         authDomain: "motm--pumas.firebaseapp.com",
@@ -86,21 +80,21 @@
         appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
       };
 
-      // --- DOM refs (now they exist) ---
+      // --- DOM refs ---
       const teamNameInput = document.getElementById("teamName");
       const matchCodeInput = document.getElementById("matchCode");
-      const playersList = document.getElementById("playersList");
-      const voteList = document.getElementById("voteList");
-      const newMatchBtn = document.getElementById("newMatch");
-      const resetBtn = document.getElementById("resetVotes");
-      const joinBtn = document.getElementById("joinBtn");
-      const shareLink = document.getElementById("shareLink");
-      const qrContainer = document.getElementById("qr");
-      const qrMsg = document.getElementById("qrMsg");
+      const playersList   = document.getElementById("playersList");
+      const voteList      = document.getElementById("voteList");
+      const newMatchBtn   = document.getElementById("newMatch");
+      const resetBtn      = document.getElementById("resetVotes");
+      const joinBtn       = document.getElementById("joinBtn");
+      const shareLink     = document.getElementById("shareLink");
+      const qrContainer   = document.getElementById("qr");
+      const qrMsg         = document.getElementById("qrMsg");
 
       // --- Init Firebase ---
       const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+      const db  = getFirestore(app);
 
       // --- Utils ---
       function makeCode(len = 6) {
@@ -115,13 +109,33 @@
             ? "🟢 You are online. Live syncing enabled."
             : "🔴 You are offline. Changes will sync when back online.";
       }
-      function ensureQRLib() {
-        if (typeof window.QRCode !== "function") {
-          qrMsg.className = "err";
-          qrMsg.textContent = "QR library failed to load. Please refresh, or check your network/content blockers.";
-          return false;
+
+      function renderQR(text) {
+        qrContainer.innerHTML = "";
+        // Try in-page library first
+        if (typeof window.QRCode === "function") {
+          try {
+            new window.QRCode(qrContainer, { text, width: 160, height: 160 });
+            qrMsg.className = "muted";
+            qrMsg.textContent = "Scan to join this match.";
+            return;
+          } catch {}
         }
-        return true;
+        // Fallback to image-based QR if library is blocked
+        const img = new Image();
+        img.width = 160;
+        img.height = 160;
+        img.alt = "QR";
+        img.src = "https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=" + encodeURIComponent(text);
+        qrContainer.appendChild(img);
+        qrMsg.className = "muted";
+        qrMsg.textContent = "QR rendered via fallback service.";
+      }
+
+      function updateShareLink(code) {
+        const url = `${location.origin}?match=${code}`;
+        shareLink.value = url;
+        renderQR(url);
       }
 
       let currentCode = null;
@@ -141,18 +155,6 @@
 
         updateShareLink(code);
         listenForChanges(code);
-      }
-
-      function updateShareLink(code) {
-        const url = `${location.origin}?match=${code}`;
-        shareLink.value = url;
-
-        // (Re)render QR
-        qrContainer.innerHTML = "";
-        if (!ensureQRLib()) return;
-        new window.QRCode(qrContainer, { text: url, width: 160, height: 160 });
-        qrMsg.className = "muted";
-        qrMsg.textContent = "Tip: share this QR or link so others can join from their phones.";
       }
 
       async function joinMatch() {
@@ -212,10 +214,7 @@
         updateShareLink(incoming);
         listenForChanges(incoming);
       }
-    });
+    }
   </script>
 </body>
 </html>
-
-
-
