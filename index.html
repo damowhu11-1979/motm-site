@@ -51,10 +51,16 @@
     #teamName{font-size:1.4rem;font-weight:700;padding:1rem .95rem;border:2px solid var(--blue);background:#fffef3}
 
     /* Logo area */
-    #teamLogo{max-height:120px;max-width:90%;display:none;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-    #uploadLogoBtn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
-    #uploadLogoBtn:hover{background:var(--blue-700)}
-    #removeLogoBtn{background:#fff;border:2px solid #ef4444;color:#ef4444;border-radius:10px;padding:.55rem .9rem;font-weight:700;cursor:pointer}
+    #teamLogo{
+      max-height:140px;max-width:95%;display:none;border-radius:12px;
+      box-shadow:0 2px 6px rgba(0,0,0,.1);object-fit:contain;background:#fff
+    }
+    #uploadLogoBtn, #removeLogoBtn{
+      border-radius:10px; padding:.6rem 1rem; font-weight:700; cursor:pointer;
+    }
+    #uploadLogoBtn{ background:var(--blue); color:#fff; border:none; }
+    #uploadLogoBtn:hover{ background:var(--blue-700); }
+    #removeLogoBtn{ background:#fff; border:2px solid #ef4444; color:#ef4444; }
 
     main{padding:22px 0}
     .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
@@ -94,9 +100,10 @@
         <img id="teamLogo" src="" alt="Team logo">
         <br>
         <div class="row" style="justify-content:center">
-          <button id="uploadLogoBtn">Upload logo</button>
-          <button id="removeLogoBtn" title="Remove current logo">Remove logo</button>
+          <button id="uploadLogoBtn" type="button">Upload logo</button>
+          <button id="removeLogoBtn" type="button" title="Remove current logo">Remove logo</button>
         </div>
+        <div class="muted" style="margin-top:6px">Logo syncs to everyone after you create/join a match.</div>
       </div>
 
       <!-- Bigger Team Name above title -->
@@ -188,11 +195,14 @@
     window.addEventListener('DOMContentLoaded', init);
 
     async function init(){
-      const [{ initializeApp }, fspkg] = await Promise.all([
+      // Firebase modules
+      const [{ initializeApp }, fspkg, storagePkg] = await Promise.all([
         import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
-        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js")
+        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"),
+        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js")
       ]);
       const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
+      const { getStorage, ref, uploadString, getDownloadURL } = storagePkg;
 
       const firebaseConfig = {
         apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
@@ -224,42 +234,32 @@
       const pNum = document.getElementById('pNum');
       const pName = document.getElementById('pName');
 
-      // State
-      const app = initializeApp(firebaseConfig);
-      const db  = getFirestore(app);
-      const deviceId = getOrMakeId('motm_device_id');
-      let code = null;
-      let unsub = null;
-      let localPlayers = [];
-
-      // ---- Logo upload logic (local only) ----
+      // Logo controls
       const uploadBtn = document.getElementById('uploadLogoBtn');
       const removeBtn = document.getElementById('removeLogoBtn');
       const logoInput = document.getElementById('logoUpload');
       const logoImg   = document.getElementById('teamLogo');
 
-      uploadBtn.addEventListener('click', ()=> logoInput.click());
-      logoInput.addEventListener('change', (e)=>{
-        const file = e.target.files?.[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt)=>{
-          logoImg.src = evt.target.result;
-          logoImg.style.display = 'inline-block';
-          localStorage.setItem('teamLogo', evt.target.result);
-        };
-        reader.readAsDataURL(file);
-      });
-      removeBtn.addEventListener('click', ()=>{
-        logoImg.src = "";
-        logoImg.style.display = 'none';
-        logoInput.value = "";
-        localStorage.removeItem('teamLogo');
-      });
-      const savedLogo = localStorage.getItem('teamLogo');
-      if(savedLogo){ logoImg.src = savedLogo; logoImg.style.display='inline-block'; }
+      // State
+      const app = initializeApp(firebaseConfig);
+      const db  = getFirestore(app);
+      const storage = getStorage(app);
+      const deviceId = getOrMakeId('motm_device_id');
+      let code = null;
+      let unsub = null;
+      let localPlayers = [];
 
-      // Utils
+      // Online indicator
+      function setOnline(){
+        onlineState.textContent = navigator.onLine
+          ? "🟢 Online. Live syncing enabled."
+          : "🔴 Offline. Changes will sync when you're back online.";
+      }
+      window.addEventListener('online', setOnline);
+      window.addEventListener('offline', setOnline);
+      setOnline();
+
+      // ===== Helpers =====
       function getOrMakeId(key){
         let v = localStorage.getItem(key);
         if(!v){ v = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())) + Math.random().toString(16).slice(2); localStorage.setItem(key,v); }
@@ -270,15 +270,6 @@
         let s=""; for(let i=0;i<len;i++) s += chars[(Math.random()*chars.length)|0];
         return s;
       }
-      function setOnline(){
-        onlineState.textContent = navigator.onLine
-          ? "🟢 Online. Live syncing enabled."
-          : "🔴 Offline. Changes will sync when you're back online.";
-      }
-      window.addEventListener('online', setOnline);
-      window.addEventListener('offline', setOnline);
-      setOnline();
-
       function renderQR(url){
         qrBox.innerHTML = "";
         if(typeof window.QRCode === "function"){
@@ -296,35 +287,40 @@
         shareLink.value = url;
         renderQR(url);
       }
+      function sha256Base64(text){
+        // Hash password client-side so we don't keep plaintext in Firestore
+        const enc = new TextEncoder().encode(text);
+        return crypto.subtle.digest('SHA-256', enc).then(buf=>{
+          const bytes = new Uint8Array(buf);
+          let bin = ""; bytes.forEach(b=> bin += String.fromCharCode(b));
+          return btoa(bin);
+        });
+      }
 
-      // Core actions
-      async function createMatch(){
-        code = makeCode(); matchCodeInput.value = code;
-        const ref = doc(db,"matches",code);
-        await setDoc(ref,{ team: teamName.value || "Canvey Island FC", players:[], votes:{}, created:new Date().toISOString() });
-        localStorage.setItem("motm_last_code", code);
-        subscribe(code);
-        updateShare();
-      }
-      async function joinMatch(){
-        const c = (matchCodeInput.value||"").trim().toUpperCase();
-        if(!c) return alert("Enter a match code");
-        code = c; localStorage.setItem("motm_last_code", code);
-        subscribe(code);
-        updateShare();
-      }
+      // ===== Firestore subscriptions & renderers =====
       function subscribe(c){
         if(unsub) unsub();
-        const ref = doc(db,"matches",c);
-        unsub = onSnapshot(ref,(snap)=>{
+        const refDoc = doc(db,"matches",c);
+        unsub = onSnapshot(refDoc,(snap)=>{
           const d=snap.data()||{};
           teamName.value = d.team || "";
+
+          // Sync logo for everyone if present
+          if(d.logoUrl){
+            logoImg.src = d.logoUrl;
+            logoImg.style.display = 'block';
+          }else{
+            // fallback: local logo if any
+            const saved = safeGetLS('teamLogo');
+            if(saved){ logoImg.src = saved; logoImg.style.display='block'; }
+            else { logoImg.style.display = 'none'; }
+          }
+
           setPlayers(d.players || []);
           renderResults(d.votes || {});
         });
       }
 
-      // Players
       function setPlayers(list){
         localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
         playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
@@ -362,32 +358,163 @@
           : `<div class="muted">No votes yet</div>`;
       }
 
+      // ===== Voting & match actions =====
       async function castVote(name){
         if(!code) return alert("Create or join a match first.");
-        const ref = doc(db,"matches",code);
-        const snap = await getDoc(ref);
+        const refDoc = doc(db,"matches",code);
+        const snap = await getDoc(refDoc);
         const data = snap.data() || {};
         const votes = data.votes || {};
         votes[deviceId] = name;
-        await setDoc(ref,{ votes },{ merge:true });
+        await setDoc(refDoc,{ votes },{ merge:true });
         voteState.textContent = "Voted";
       }
 
-      // Event bindings
+      async function createMatch(){
+        code = makeCode(); matchCodeInput.value = code;
+        const refDoc = doc(db,"matches",code);
+        await setDoc(refDoc,{
+          team: teamName.value || "Canvey Island FC",
+          players:[],
+          votes:{},
+          created:new Date().toISOString()
+          // passHash, logoUrl will be added later as needed
+        });
+        localStorage.setItem("motm_last_code", code);
+        subscribe(code);
+        updateShare();
+      }
+
+      async function joinMatch(){
+        const c = (matchCodeInput.value||"").trim().toUpperCase();
+        if(!c) return alert("Enter a match code");
+        code = c; localStorage.setItem("motm_last_code", code);
+        subscribe(code);
+        updateShare();
+      }
+
+      // ===== Password-protected reset =====
+      async function ensurePasswordAndReset(){
+        if(!code) return alert("No match active");
+
+        const refDoc = doc(db,"matches",code);
+        const snap = await getDoc(refDoc);
+        const data = snap.data() || {};
+        const hasPass = !!data.passHash;
+
+        if(!hasPass){
+          // Set once
+          const pass = prompt("Set a password for this match (used to reset votes):");
+          if(!pass) return;
+          const confirmPass = prompt("Confirm password:");
+          if(pass !== confirmPass){ alert("Passwords do not match."); return; }
+          const hash = await sha256Base64(pass);
+          await updateDoc(refDoc,{ passHash: hash });
+          alert("Password set for this match. Use it for future resets.");
+          return; // require user to press Reset again (or we could continue)
+        }else{
+          const entry = prompt("Enter reset password:");
+          if(entry == null) return;
+          const hash = await sha256Base64(entry);
+          if(hash !== data.passHash){ alert("Incorrect password."); return; }
+          if(!confirm("Reset all votes for this match?")) return;
+          await updateDoc(refDoc,{ votes:{} });
+          alert("Votes reset.");
+        }
+      }
+
+      // ===== Logo upload (downscale + sync to Firebase Storage) =====
+      uploadBtn.addEventListener('click', () => logoInput.click());
+      logoImg.addEventListener('click', () => logoInput.click());
+
+      removeBtn.addEventListener('click', async ()=>{
+        logoImg.src = ""; logoImg.style.display = 'none'; logoInput.value = "";
+        safeRemoveLS('teamLogo');
+        if(code){
+          // Clear for everyone (optional: you could also delete from storage)
+          await updateDoc(doc(db,"matches",code), { logoUrl: "" });
+        }
+      });
+
+      // Restore local logo for pre-match preview
+      const savedLogoLocal = safeGetLS('teamLogo');
+      if(savedLogoLocal){ logoImg.src = savedLogoLocal; logoImg.style.display='block'; }
+
+      logoInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if(!code){
+          // No match yet → show locally, persist locally, but can't sync yet
+          const dataUrl = await downscaleToDataUrl(file, 900, 0.8);
+          logoImg.src = dataUrl; logoImg.style.display = 'block';
+          safeSetLS('teamLogo', dataUrl);
+          alert("Logo will sync to everyone after you create or join a match.");
+          return;
+        }
+        try{
+          const dataUrl = await downscaleToDataUrl(file, 1200, 0.9); // nicer quality for shared logo
+          // Upload to Storage
+          const path = `matches/${code}/logo.jpg`;
+          const storageRef = ref(storage, path);
+          await uploadString(storageRef, dataUrl, 'data_url');
+          const url = await getDownloadURL(storageRef);
+          // Update Firestore so all clients load it
+          await updateDoc(doc(db,"matches",code), { logoUrl: url });
+          // Also keep a local copy for instant paint
+          safeSetLS('teamLogo', dataUrl);
+          logoImg.src = url;
+          logoImg.style.display = 'block';
+        }catch(err){
+          console.error("Logo upload failed:", err);
+          alert("Could not upload logo. Try a smaller image or different network.");
+        }
+      });
+
+      // Image utilities
+      function safeSetLS(k,v){ try{ localStorage.setItem(k,v); }catch{} }
+      function safeGetLS(k){ try{ return localStorage.getItem(k); }catch{ return null; } }
+      function safeRemoveLS(k){ try{ localStorage.removeItem(k); }catch{} }
+
+      async function downscaleToDataUrl(file, maxDim = 900, quality = 0.8) {
+        const blob = file;
+        const img = await loadImage(blob);
+        const { width, height } = img;
+        const scale = Math.min(1, maxDim / Math.max(width, height));
+        const outW = Math.max(1, Math.round(width * scale));
+        const outH = Math.max(1, Math.round(height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = outW; canvas.height = outH;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, outW, outH);
+        ctx.drawImage(img, 0, 0, outW, outH);
+        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+        if (!dataUrl || dataUrl.length < 32) dataUrl = canvas.toDataURL('image/png');
+        return dataUrl;
+      }
+      function loadImage(blob) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          const url = URL.createObjectURL(blob);
+          img.src = url;
+          img.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        });
+      }
+
+      // ===== Wire up buttons =====
       document.getElementById('addPlayer').addEventListener('click', async ()=>{
         if(!code) return alert("Create or join a match first.");
-        const number = document.getElementById('pNum').value.trim();
-        const name = document.getElementById('pName').value.trim();
+        const number = pNum.value.trim();
+        const name = pName.value.trim();
         if(!name) return alert("Enter a player name");
-        const ref = doc(db,"matches",code);
-        const snap = await getDoc(ref);
+        const refDoc = doc(db,"matches",code);
+        const snap = await getDoc(refDoc);
         const d = snap.data()||{};
         const players = d.players||[];
         players.push({ number, name });
-        await setDoc(ref,{ players },{ merge:true });
-        document.getElementById('pNum').value="";
-        document.getElementById('pName').value="";
-        document.getElementById('pNum').focus();
+        await setDoc(refDoc,{ players },{ merge:true });
+        pNum.value=""; pName.value=""; pNum.focus();
       });
 
       btnCopy.addEventListener('click',()=>{
@@ -396,12 +523,7 @@
         btnCopy.textContent="Copied!"; setTimeout(()=>btnCopy.textContent="Copy link",1200);
       });
 
-      btnReset.addEventListener('click', async ()=>{
-        if(!code) return alert("No match active");
-        if(!confirm("Reset all votes for this match?")) return;
-        await updateDoc(doc(db,"matches",code),{ votes:{} });
-      });
-
+      btnReset.addEventListener('click', ensurePasswordAndReset);
       btnNew.addEventListener('click', createMatch);
       btnJoin.addEventListener('click', joinMatch);
 
