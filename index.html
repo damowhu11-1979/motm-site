@@ -162,7 +162,6 @@ async function init(){
     apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
     authDomain: "motm--pumas.firebaseapp.com",
     projectId: "motm--pumas",
-    // storageBucket intentionally not used (no Storage)
     messagingSenderId: "953454926915",
     appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
   };
@@ -336,9 +335,10 @@ async function init(){
     }
   }
 
-  // --- Logo via Firestore (no Storage) ---
+  // --- Logo via Firestore (no Storage), with mobile-robust decoding ---
   uploadBtn.addEventListener('click',()=>logoInput.click());
   logoImg.addEventListener('click',()=>logoInput.click());
+
   removeBtn.addEventListener('click', async()=>{
     logoImg.src=""; logoImg.style.display='none'; logoInput.value="";
     logoError.textContent="";
@@ -352,9 +352,8 @@ async function init(){
     if(!code){ alert("Create or join a match first, then upload the logo."); return; }
     try{
       const dataUrl=await downscaleToDataUrl(file, 900, 0.75);
-      // Size guard (Firestore has 1MB document limit; keep margin)
-      const bytes = Math.ceil((dataUrl.length*3)/4); // rough base64 → bytes
-      if(bytes > 900*1024){ // ~900KB
+      const bytes = Math.ceil((dataUrl.length*3)/4); // base64→bytes estimate
+      if(bytes > 900*1024){
         logoError.textContent="Logo is still too large after compression. Please choose a smaller image (screenshot or crop).";
         return;
       }
@@ -362,33 +361,54 @@ async function init(){
       logoImg.src=dataUrl; logoImg.style.display='block';
     }catch(err){
       console.error(err);
-      logoError.textContent="Could not process image. Try a smaller photo.";
+      logoError.textContent = err && err.message ? err.message : "Could not process image. Try a smaller photo.";
     }
   });
 
-  async function downscaleToDataUrl(file, maxDim=900, quality=0.75){
-    const img=await loadImage(file);
-    const {width,height}=img;
-    const scale=Math.min(1, maxDim/Math.max(width,height));
-    const outW=Math.max(1,Math.round(width*scale));
-    const outH=Math.max(1,Math.round(height*scale));
-    const canvas=document.createElement('canvas');
-    canvas.width=outW; canvas.height=outH;
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle="#FFF"; ctx.fillRect(0,0,outW,outH);
-    ctx.drawImage(img,0,0,outW,outH);
-    let dataUrl=canvas.toDataURL('image/jpeg',quality);
-    if(!dataUrl || dataUrl.length<32) dataUrl=canvas.toDataURL('image/png');
+  // ==== NEW robust image decoding functions ====
+  async function downscaleToDataUrl(file, maxDim = 900, quality = 0.75) {
+    const bmp = await loadBitmap(file); // ImageBitmap or HTMLImageElement
+    const width  = bmp.width  || bmp.naturalWidth;
+    const height = bmp.height || bmp.naturalHeight;
+
+    const scale = Math.min(1, maxDim / Math.max(width, height));
+    const outW = Math.max(1, Math.round(width * scale));
+    const outH = Math.max(1, Math.round(height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, outW, outH);
+    ctx.drawImage(bmp, 0, 0, outW, outH);
+
+    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+    if (!dataUrl || dataUrl.length < 32) dataUrl = canvas.toDataURL('image/png');
+
+    try { bmp.close && bmp.close(); } catch {}
     return dataUrl;
   }
-  function loadImage(file){
-    return new Promise((resolve,reject)=>{
-      const img=new Image();
-      img.onload=()=>resolve(img);
-      img.onerror=reject;
-      const url=URL.createObjectURL(file);
-      img.src=url;
-      img.addEventListener('load',()=>URL.revokeObjectURL(url),{once:true});
+
+  async function loadBitmap(file) {
+    const type = (file.type || '').toLowerCase();
+    const name = (file.name || '').toLowerCase();
+    if (type.includes('heic') || type.includes('heif') || name.endsWith('.heic') || name.endsWith('.heif')) {
+      throw new Error('This phone saved the photo as HEIC/HEIF, which the browser cannot decode. Open the photo, take a screenshot, or export as JPG/PNG and try again.');
+    }
+    if ('createImageBitmap' in window) {
+      try {
+        return await createImageBitmap(file, { imageOrientation: 'from-image', premultiplyAlpha: 'default' });
+      } catch (e) {
+        // fall through
+      }
+    }
+    return await new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image decode failed. Try a smaller image or screenshot.')); };
+      img.src = url;
     });
   }
 
