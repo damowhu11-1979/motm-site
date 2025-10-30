@@ -1,448 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Man of the Match — Canvey Island FC</title>
-
-  <style>
-    :root{ --yellow:#FFCC00; --blue:#0057B7; --blue-700:#00429b; --bg:#f7f7f7; --card:#ffffff; --muted:#6b7280; --border:#e5e7eb; --shadow:0 2px 8px rgba(0,0,0,.08); --radius:14px; }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:#111;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
-    header{ background:linear-gradient(90deg,var(--yellow),#ffe680 50%,var(--yellow)); border-bottom:4px solid var(--blue); padding:18px 16px 24px; }
-    .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    h1{margin:8px 0 0;font-size:2.2rem;letter-spacing:.2px;color:#111}
-    .subtitle{margin:.35rem 0 0;color:#222;opacity:.85}
-    .top-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
-    .btn{appearance:none;border:0;border-radius:999px;padding:.7rem 1.1rem;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform .05s ease;}
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{background:var(--blue);color:#fff}
-    .btn-primary:hover{background:var(--blue-700)}
-    .btn-outline{background:#fff;border:2px solid var(--blue);color:var(--blue)}
-    .btn-danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
-    input,button{font-size:1rem}
-    input{width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem .9rem;background:#fff;outline:none}
-    input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
-    .label{font-weight:700;margin-bottom:6px}
-    .muted{color:var(--muted);font-size:.92rem}
-    #teamName{font-size:1.4rem;font-weight:700;padding:1rem .95rem;border:2px solid var(--blue);background:#fffef3}
-    #teamLogo{max-height:140px;max-width:95%;display:none;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);object-fit:contain;background:#fff}
-    #uploadLogoBtn,#removeLogoBtn{border-radius:10px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
-    #uploadLogoBtn{background:var(--blue);color:#fff;border:none}
-    #uploadLogoBtn:hover{background:var(--blue-700)}
-    #removeLogoBtn{background:#fff;border:2px solid #ef4444;color:#ef4444}
-    main{padding:22px 0}
-    .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;}
-    .span-12{grid-column:span 12}
-    .span-6{grid-column:span 6}
-    .tag{background:var(--yellow);border:1px solid #dcb300;border-radius:999px;padding:.2rem .55rem;font-weight:700}
-    .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
-    .list .head,.list .rowi{display:grid;grid-template-columns:72px 1fr 140px;align-items:center}
-    .list .head{background:#fafafa;color:#111;font-weight:700}
-    .list .cell{padding:.65rem .75rem;border-bottom:1px solid var(--border)}
-    .list .rowi:last-child .cell{border-bottom:0}
-    .vote-btn{border-radius:9px;border:1px solid var(--blue);color:#fff;background:var(--blue);padding:.45rem .7rem;font-weight:700;cursor:pointer}
-    .vote-btn:hover{background:var(--blue-700)}
-    .status{background:#eaffd6;border:1px solid #a3d677;border-radius:10px;padding:.6rem .75rem;margin-bottom:10px}
-    .qrbox{width:180px;min-height:180px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
-    .code-group{display:grid;gap:10px;grid-template-columns:1fr auto;align-items:center}
-    .code-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    @media (max-width:900px){ .span-6{grid-column:span 12} .list .head,.list .rowi{grid-template-columns:64px 1fr 120px} .code-group{grid-template-columns:1fr} }
-  </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Man of the Match — Canvey Island FC</title>
+<style>
+  :root{--yellow:#FFCC00;--blue:#0057B7;--blue-700:#00429b;--bg:#f7f7f7;--card:#fff;--muted:#6b7280;--border:#e5e7eb;--shadow:0 2px 8px rgba(0,0,0,.08);--radius:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#111;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+  header{background:linear-gradient(90deg,var(--yellow),#ffe680 50%,var(--yellow));border-bottom:4px solid var(--blue);padding:18px 16px 24px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  h1{margin:8px 0 0;font-size:2.2rem;letter-spacing:.2px;color:#111}
+  .subtitle{margin:.35rem 0 0;color:#222;opacity:.85}
+  .top-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{appearance:none;border:0;border-radius:999px;padding:.7rem 1.1rem;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transition:transform .05s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:var(--blue-700)}
+  .btn-outline{background:#fff;border:2px solid var(--blue);color:var(--blue)}
+  .btn-danger{background:#fff;border:2px solid #ef4444;color:#ef4444}
+  input,button{font-size:1rem}
+  input{width:100%;border:1px solid var(--border);border-radius:10px;padding:.75rem .9rem;background:#fff;outline:none}
+  input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,183,.15)}
+  .label{font-weight:700;margin-bottom:6px}
+  .muted{color:var(--muted);font-size:.92rem}
+  #teamName{font-size:1.4rem;font-weight:700;padding:1rem .95rem;border:2px solid var(--blue);background:#fffef3}
+  #teamLogo{max-height:140px;max-width:95%;display:none;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.1);object-fit:contain;background:#fff}
+  #uploadLogoBtn,#removeLogoBtn{border-radius:10px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
+  #uploadLogoBtn{background:var(--blue);color:#fff;border:none}
+  #uploadLogoBtn:hover{background:var(--blue-700)}
+  #removeLogoBtn{background:#fff;border:2px solid #ef4444;color:#ef4444}
+  main{padding:22px 0}
+  .grid{display:grid;gap:18px;grid-template-columns:repeat(12,1fr)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .span-12{grid-column:span 12}
+  .span-6{grid-column:span 6}
+  .tag{background:var(--yellow);border:1px solid #dcb300;border-radius:999px;padding:.2rem .55rem;font-weight:700}
+  .list{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .list .head,.list .rowi{display:grid;grid-template-columns:72px 1fr 140px;align-items:center}
+  .list .head{background:#fafafa;color:#111;font-weight:700}
+  .list .cell{padding:.65rem .75rem;border-bottom:1px solid var(--border)}
+  .list .rowi:last-child .cell{border-bottom:0}
+  .vote-btn{border-radius:9px;border:1px solid var(--blue);color:#fff;background:var(--blue);padding:.45rem .7rem;font-weight:700;cursor:pointer}
+  .vote-btn:hover{background:var(--blue-700)}
+  .status{background:#eaffd6;border:1px solid #a3d677;border-radius:10px;padding:.6rem .75rem;margin-bottom:10px}
+  .qrbox{width:180px;min-height:180px;border:1px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;background:#fff}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .code-group{display:grid;gap:10px;grid-template-columns:1fr auto;align-items:center}
+  .code-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  @media (max-width:900px){.span-6{grid-column:span 12}.list .head,.list .rowi{grid-template-columns:64px 1fr 120px}.code-group{grid-template-columns:1fr}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <div id="logoSection" style="text-align:center;margin-bottom:12px">
-        <input type="file" id="logoUpload" accept="image/*" style="display:none" />
-        <img id="teamLogo" src="" alt="Team logo">
-        <br>
-        <div class="row" style="justify-content:center">
-          <button id="uploadLogoBtn" type="button">Upload logo</button>
-          <button id="removeLogoBtn" type="button" title="Remove current logo">Remove logo</button>
-        </div>
-        <div class="muted" style="margin-top:6px">Logo syncs to everyone after you create/join a match.</div>
+<header>
+  <div class="wrap">
+    <div id="logoSection" style="text-align:center;margin-bottom:12px">
+      <input type="file" id="logoUpload" accept="image/*" style="display:none" />
+      <img id="teamLogo" src="" alt="Team logo">
+      <br>
+      <div class="row" style="justify-content:center">
+        <button id="uploadLogoBtn" type="button">Upload logo</button>
+        <button id="removeLogoBtn" type="button" title="Remove current logo">Remove logo</button>
       </div>
-
-      <div class="label" style="margin:0 0 6px">Team name</div>
-      <input id="teamName" placeholder="e.g. Canvey Island FC" />
-
-      <div class="row" style="justify-content:space-between;align-items:flex-end;margin-top:10px">
-        <div>
-          <h1>Man of the Match</h1>
-          <div class="subtitle">Create a match, add players, share the link, and collect votes live.</div>
-        </div>
-        <div class="top-actions">
-          <button id="newMatch" class="btn btn-primary">New match</button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <div id="onlineState" class="status">Connecting…</div>
-
-    <div class="card span-12" style="margin-bottom:18px">
-      <div class="grid" style="grid-template-columns:1fr 200px; gap:16px; align-items:start">
-        <div>
-          <div class="label">Share link</div>
-          <div class="code-group">
-            <input id="shareLink" class="mono" readonly />
-            <button id="copyLink" class="btn btn-outline">Copy link</button>
-          </div>
-
-          <div class="label" style="margin-top:14px">Match code</div>
-          <div class="code-row">
-            <input id="matchCode" class="mono" placeholder="———" style="max-width:220px" />
-            <button id="joinBtn" class="btn btn-outline">Join</button>
-            <button id="resetVotes" class="btn btn-danger">Reset votes</button>
-          </div>
-          <div class="muted" style="margin-top:6px">Paste a code to join, or click <b>New match</b> above to start one.</div>
-        </div>
-
-        <div id="qrBox" class="qrbox"></div>
-      </div>
+      <div class="muted" style="margin-top:6px">Logo syncs to everyone after you create/join a match.</div>
+      <div id="logoError" class="muted" style="color:#b91c1c;margin-top:6px"></div>
     </div>
 
-    <div class="grid">
-      <div class="card span-6">
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="label">Players</div>
-          <div id="playerCount" class="tag">0 players</div>
-        </div>
-        <div class="row" style="margin-bottom:10px">
-          <input id="pNum" class="mono" style="max-width:90px" placeholder="#" />
-          <input id="pName" placeholder="Player name" />
-          <button id="addPlayer" class="btn btn-primary">Add</button>
-        </div>
-        <div class="list" id="playersList">
-          <div class="head">
-            <div class="cell">#</div>
-            <div class="cell">Name</div>
-            <div class="cell">Actions</div>
-          </div>
-        </div>
-        <div class="muted" style="margin-top:8px">Roster is saved locally and synced to the match so voters see the same list.</div>
-      </div>
+    <div class="label" style="margin:0 0 6px">Team name</div>
+    <input id="teamName" placeholder="e.g. Canvey Island FC" />
 
-      <div class="card span-6">
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="label">Vote</div>
-          <div id="voteState" class="tag" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">Not voted</div>
-        </div>
-        <div class="muted">Tap a player to cast or change your vote. One vote per device.</div>
-        <div id="voteList" style="margin-top:12px"></div>
+    <div class="row" style="justify-content:space-between;align-items:flex-end;margin-top:10px">
+      <div>
+        <h1>Man of the Match</h1>
+        <div class="subtitle">Create a match, add players, share the link, and collect votes live.</div>
       </div>
-
-      <div class="card span-12">
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="label">Live results</div>
-          <div id="voteCount" class="tag">0 votes</div>
-        </div>
-        <div id="results"></div>
+      <div class="top-actions">
+        <button id="newMatch" class="btn btn-primary">New match</button>
       </div>
     </div>
-  </main>
+  </div>
+</header>
 
-  <script type="module">
-    window.addEventListener('DOMContentLoaded', init);
+<main class="wrap">
+  <div id="onlineState" class="status">Connecting…</div>
 
-    async function init(){
-      const [{ initializeApp }, fspkg, storagePkg, authPkg] = await Promise.all([
-        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
-        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"),
-        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js"),
-        import("https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js") // NEW
-      ]);
-      const { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
-      const { getStorage, ref, uploadString, getDownloadURL } = storagePkg;
-      const { getAuth, signInAnonymously, onAuthStateChanged } = authPkg; // NEW
+  <div class="card span-12" style="margin-bottom:18px">
+    <div class="grid" style="grid-template-columns:1fr 200px; gap:16px; align-items:start">
+      <div>
+        <div class="label">Share link</div>
+        <div class="code-group">
+          <input id="shareLink" class="mono" readonly />
+          <button id="copyLink" class="btn btn-outline">Copy link</button>
+        </div>
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
-        authDomain: "motm--pumas.firebaseapp.com",
-        projectId: "motm--pumas",
-        storageBucket: "motm--pumas.appspot.com",  // ✅ FIXED BUCKET
-        messagingSenderId: "953454926915",
-        appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
-      };
+        <div class="label" style="margin-top:14px">Match code</div>
+        <div class="code-row">
+          <input id="matchCode" class="mono" placeholder="———" style="max-width:220px" />
+          <button id="joinBtn" class="btn btn-outline">Join</button>
+          <button id="resetVotes" class="btn btn-danger">Reset votes</button>
+        </div>
+        <div class="muted" style="margin-top:6px">Paste a code to join, or click <b>New match</b> above to start one.</div>
+      </div>
 
-      // DOM refs (unchanged)
-      const onlineState = document.getElementById('onlineState');
-      const teamName = document.getElementById('teamName');
-      const matchCodeInput = document.getElementById('matchCode');
-      const playersList = document.getElementById('playersList');
-      const playerCount = document.getElementById('playerCount');
-      const voteList = document.getElementById('voteList');
-      const voteState = document.getElementById('voteState');
-      const shareLink = document.getElementById('shareLink');
-      const qrBox = document.getElementById('qrBox');
-      const results = document.getElementById('results');
-      const voteCount = document.getElementById('voteCount');
-      const btnNew = document.getElementById('newMatch');
-      const btnJoin = document.getElementById('joinBtn');
-      const btnAdd = document.getElementById('addPlayer');
-      const btnCopy = document.getElementById('copyLink');
-      const btnReset = document.getElementById('resetVotes');
-      const pNum = document.getElementById('pNum');
-      const pName = document.getElementById('pName');
-      const uploadBtn = document.getElementById('uploadLogoBtn');
-      const removeBtn = document.getElementById('removeLogoBtn');
-      const logoInput = document.getElementById('logoUpload');
-      const logoImg   = document.getElementById('teamLogo');
+      <div id="qrBox" class="qrbox"></div>
+    </div>
+  </div>
 
-      // Init
-      const app = initializeApp(firebaseConfig);
-      const db  = getFirestore(app);
-      const storage = getStorage(app);
-      const auth = getAuth(app); // NEW
-      // Ensure we’re signed in before any storage writes
-      onAuthStateChanged(auth, (u)=>{ if(!u) signInAnonymously(auth).catch(console.error); });
-      try { await signInAnonymously(auth); } catch(e) { /* already signed in or rules allow read only */ }
+  <div class="grid">
+    <div class="card span-6">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="label">Players</div>
+        <div id="playerCount" class="tag">0 players</div>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <input id="pNum" class="mono" style="max-width:90px" placeholder="#" />
+        <input id="pName" placeholder="Player name" />
+        <button id="addPlayer" class="btn btn-primary">Add</button>
+      </div>
+      <div class="list" id="playersList">
+        <div class="head">
+          <div class="cell">#</div>
+          <div class="cell">Name</div>
+          <div class="cell">Actions</div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px">Roster is saved locally and synced to the match so voters see the same list.</div>
+    </div>
 
-      const deviceId = getOrMakeId('motm_device_id');
-      let code = null;
-      let unsub = null;
-      let localPlayers = [];
+    <div class="card span-6">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="label">Vote</div>
+        <div id="voteState" class="tag" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">Not voted</div>
+      </div>
+      <div class="muted">Tap a player to cast or change your vote. One vote per device.</div>
+      <div id="voteList" style="margin-top:12px"></div>
+    </div>
 
-      function setOnline(){
-        onlineState.textContent = navigator.onLine
-          ? "🟢 Online. Live syncing enabled."
-          : "🔴 Offline. Changes will sync when you're back online.";
-      }
-      window.addEventListener('online', setOnline);
-      window.addEventListener('offline', setOnline);
-      setOnline();
+    <div class="card span-12">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="label">Live results</div>
+        <div id="voteCount" class="tag">0 votes</div>
+      </div>
+      <div id="results"></div>
+    </div>
+  </div>
+</main>
 
-      function getOrMakeId(key){
-        let v = localStorage.getItem(key);
-        if(!v){ v = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())) + Math.random().toString(16).slice(2); localStorage.setItem(key,v); }
-        return v;
-      }
-      function makeCode(len=6){
-        const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let s=""; for(let i=0;i<len;i++) s += chars[(Math.random()*chars.length)|0];
-        return s;
-      }
-      function renderQR(url){
-        qrBox.innerHTML = "";
-        if(typeof window.QRCode === "function"){
-          new window.QRCode(qrBox, { text:url, width:180, height:180 });
-        }else{
-          const img = new Image();
-          img.width=180; img.height=180; img.alt="QR";
-          img.src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
-          qrBox.appendChild(img);
-        }
-      }
-      function updateShare(){
-        if(!code) { shareLink.value=""; qrBox.innerHTML=""; return; }
-        const url = `${location.origin}?match=${code}`;
-        shareLink.value = url;
-        renderQR(url);
-      }
-      async function sha256Base64(text){
-        const enc = new TextEncoder().encode(text);
-        const buf = await crypto.subtle.digest('SHA-256', enc);
-        const bytes = new Uint8Array(buf);
-        let bin = ""; bytes.forEach(b=> bin += String.fromCharCode(b));
-        return btoa(bin);
-      }
+<script type="module">
+window.addEventListener('DOMContentLoaded', init);
 
-      function subscribe(c){
-        if(unsub) unsub();
-        const refDoc = doc(db,"matches",c);
-        unsub = onSnapshot(refDoc,(snap)=>{
-          const d=snap.data()||{};
-          teamName.value = d.team || "";
-          if(d.logoUrl){ // synced logo for everyone
-            logoImg.src = d.logoUrl;
-            logoImg.style.display = 'block';
-          }
-          setPlayers(d.players || []);
-          renderResults(d.votes || {});
-        });
-      }
+async function init(){
+  const [{ initializeApp }, fspkg] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"),
+  ]);
+  const { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } = fspkg;
 
-      function setPlayers(list){
-        localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
-        playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
-        playersList.querySelectorAll('.rowi').forEach(n=>n.remove());
-        localPlayers.forEach((p,idx)=>{
-          const row=document.createElement('div'); row.className='rowi';
-          row.style.display='grid'; row.style.gridTemplateColumns='72px 1fr 140px';
-          row.style.alignItems='center';
-          row.innerHTML = `
-            <div class="cell mono">${p.number||""}</div>
-            <div class="cell">${p.name||""}</div>
-            <div class="cell"><button data-i="${idx}" class="vote-btn">Vote</button></div>`;
-          playersList.appendChild(row);
-        });
-        playersList.querySelectorAll('.vote-btn').forEach(btn=>{
-          btn.addEventListener('click',()=>{
-            const i = +btn.dataset.i;
-            if(localPlayers[i]) castVote(localPlayers[i].name);
-          });
-        });
-        voteList.innerHTML = localPlayers.map(p=>`
-          <button class="vote-btn" data-name="${p.name}">${p.number?`${p.number}. `:""}${p.name}</button>
-        `).join(" ");
-        voteList.querySelectorAll('button').forEach(b=>{
-          b.addEventListener('click',()=>castVote(b.dataset.name));
-        });
-      }
+  const firebaseConfig = {
+    apiKey: "AIzaSyBqrlHZG_ZejqNKF97momPHTF9d-GlUTg",
+    authDomain: "motm--pumas.firebaseapp.com",
+    projectId: "motm--pumas",
+    // storageBucket intentionally not used (no Storage)
+    messagingSenderId: "953454926915",
+    appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
+  };
 
-      function renderResults(votes){
-        const counts={}; Object.values(votes||{}).forEach(v=>{ counts[v]=(counts[v]||0)+1; });
-        const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-        voteCount.textContent = `${Object.keys(votes||{}).length} vote${Object.keys(votes||{}).length===1?"":"s"}`;
-        results.innerHTML = arr.length
-          ? arr.map(([name,n])=>`<div style="padding:.35rem 0">${name}: <b>${n}</b></div>`).join("")
-          : `<div class="muted">No votes yet</div>`;
-      }
+  // DOM
+  const onlineState = document.getElementById('onlineState');
+  const teamName = document.getElementById('teamName');
+  const matchCodeInput = document.getElementById('matchCode');
+  const playersList = document.getElementById('playersList');
+  const playerCount = document.getElementById('playerCount');
+  const voteList = document.getElementById('voteList');
+  const voteState = document.getElementById('voteState');
+  const shareLink = document.getElementById('shareLink');
+  const qrBox = document.getElementById('qrBox');
+  const results = document.getElementById('results');
+  const voteCount = document.getElementById('voteCount');
+  const btnNew = document.getElementById('newMatch');
+  const btnJoin = document.getElementById('joinBtn');
+  const btnAdd = document.getElementById('addPlayer');
+  const btnCopy = document.getElementById('copyLink');
+  const btnReset = document.getElementById('resetVotes');
+  const pNum = document.getElementById('pNum');
+  const pName = document.getElementById('pName');
 
-      async function castVote(name){
-        if(!code) return alert("Create or join a match first.");
-        const refDoc = doc(db,"matches",code);
-        const snap = await getDoc(refDoc);
-        const data = snap.data() || {};
-        const votes = data.votes || {};
-        votes[deviceId] = name;
-        await setDoc(refDoc,{ votes },{ merge:true });
-        voteState.textContent = "Voted";
-      }
+  // Logo
+  const uploadBtn = document.getElementById('uploadLogoBtn');
+  const removeBtn = document.getElementById('removeLogoBtn');
+  const logoInput = document.getElementById('logoUpload');
+  const logoImg = document.getElementById('teamLogo');
+  const logoError = document.getElementById('logoError');
 
-      async function createMatch(){
-        code = makeCode(); matchCodeInput.value = code;
-        const refDoc = doc(db,"matches",code);
-        await setDoc(refDoc,{ team: teamName.value || "Canvey Island FC", players:[], votes:{}, created:new Date().toISOString() });
-        localStorage.setItem("motm_last_code", code);
-        subscribe(code);
-        updateShare();
-      }
-      async function joinMatch(){
-        const c = (matchCodeInput.value||"").trim().toUpperCase();
-        if(!c) return alert("Enter a match code");
-        code = c; localStorage.setItem("motm_last_code", code);
-        subscribe(code);
-        updateShare();
-      }
+  // State
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const deviceId = getOrMakeId('motm_device_id');
+  let code = null, unsub = null, localPlayers = [];
 
-      async function ensurePasswordAndReset(){
-        if(!code) return alert("No match active");
-        const refDoc = doc(db,"matches",code);
-        const snap = await getDoc(refDoc);
-        const data = snap.data() || {};
-        const hasPass = !!data.passHash;
-        if(!hasPass){
-          const pass = prompt("Set a password for this match (used to reset votes):");
-          if(!pass) return;
-          const confirmPass = prompt("Confirm password:");
-          if(pass !== confirmPass){ alert("Passwords do not match."); return; }
-          const hash = await sha256Base64(pass);
-          await updateDoc(refDoc,{ passHash: hash });
-          alert("Password set for this match. Press Reset again to clear votes.");
-          return;
-        }else{
-          const entry = prompt("Enter reset password:");
-          if(entry == null) return;
-          const hash = await sha256Base64(entry);
-          if(hash !== data.passHash){ alert("Incorrect password."); return; }
-          if(!confirm("Reset all votes for this match?")) return;
-          await updateDoc(refDoc,{ votes:{} });
-          alert("Votes reset.");
-        }
-      }
+  // Online indicator
+  function setOnline(){
+    onlineState.textContent = navigator.onLine
+      ? "🟢 Online. Live syncing enabled."
+      : "🔴 Offline. Changes will sync when you're back online.";
+  }
+  window.addEventListener('online', setOnline);
+  window.addEventListener('offline', setOnline);
+  setOnline();
 
-      // --- Logo upload (downscale + Storage + Firestore) ---
-      uploadBtn.addEventListener('click', () => logoInput.click());
-      logoImg.addEventListener('click', () => logoInput.click());
-      removeBtn.addEventListener('click', async ()=>{
-        logoImg.src = ""; logoImg.style.display = 'none'; logoInput.value = "";
-        if(code){ await updateDoc(doc(db,"matches",code), { logoUrl: "" }); }
-      });
-
-      logoInput.addEventListener('change', async (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        if(!code){ alert("Create or join a match first, then upload the logo."); return; }
-        try{
-          const dataUrl = await downscaleToDataUrl(file, 1200, 0.9);
-          const path = `matches/${code}/logo.jpg`;
-          const storageRef = ref(storage, path);
-          await uploadString(storageRef, dataUrl, 'data_url');  // requires auth + write rule
-          const url = await getDownloadURL(storageRef);         // requires read rule
-          await updateDoc(doc(db,"matches",code), { logoUrl: url });
-          logoImg.src = url;
-          logoImg.style.display = 'block';
-        }catch(err){
-          console.error("Logo upload failed:", err);
-          alert("Logo upload failed. Make sure Anonymous auth is enabled and Storage rules allow it.");
-        }
-      });
-
-      async function downscaleToDataUrl(file, maxDim = 900, quality = 0.8) {
-        const img = await loadImage(file);
-        const { width, height } = img;
-        const scale = Math.min(1, maxDim / Math.max(width, height));
-        const outW = Math.max(1, Math.round(width * scale));
-        const outH = Math.max(1, Math.round(height * scale));
-        const canvas = document.createElement('canvas');
-        canvas.width = outW; canvas.height = outH;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, outW, outH);
-        ctx.drawImage(img, 0, 0, outW, outH);
-        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-        if (!dataUrl || dataUrl.length < 32) dataUrl = canvas.toDataURL('image/png');
-        return dataUrl;
-      }
-      function loadImage(file) {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          const url = URL.createObjectURL(file);
-          img.src = url;
-          img.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
-        });
-      }
-
-      // Wire up
-      document.getElementById('addPlayer').addEventListener('click', async ()=>{
-        if(!code) return alert("Create or join a match first.");
-        const number = pNum.value.trim();
-        const name = pName.value.trim();
-        if(!name) return alert("Enter a player name");
-        const refDoc = doc(db,"matches",code);
-        const snap = await getDoc(refDoc);
-        const d = snap.data()||{};
-        const players = d.players||[];
-        players.push({ number, name });
-        await setDoc(refDoc,{ players },{ merge:true });
-        pNum.value=""; pName.value=""; pNum.focus();
-      });
-
-      btnCopy.addEventListener('click',()=>{
-        if(!shareLink.value) return;
-        navigator.clipboard.writeText(shareLink.value);
-        btnCopy.textContent="Copied!"; setTimeout(()=>btnCopy.textContent="Copy link",1200);
-      });
-
-      btnReset.addEventListener('click', ensurePasswordAndReset);
-      btnNew.addEventListener('click', createMatch);
-      btnJoin.addEventListener('click', joinMatch);
-
-      const qs = new URLSearchParams(location.search);
-      const incoming = (qs.get("match")||"").toUpperCase();
-      const last = localStorage.getItem("motm_last_code")||"";
-      if(incoming){ matchCodeInput.value = incoming; joinMatch(); }
-      else if(last){ matchCodeInput.value = last; joinMatch(); }
+  function getOrMakeId(key){
+    let v = localStorage.getItem(key);
+    if(!v){ v = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())) + Math.random().toString(16).slice(2); localStorage.setItem(key,v); }
+    return v;
+  }
+  function makeCode(len=6){
+    const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let s=""; for(let i=0;i<len;i++) s += chars[(Math.random()*chars.length)|0];
+    return s;
+  }
+  function renderQR(url){
+    qrBox.innerHTML="";
+    if(typeof window.QRCode === "function"){
+      new window.QRCode(qrBox,{text:url,width:180,height:180});
+    }else{
+      const img=new Image(); img.width=180; img.height=180; img.alt="QR";
+      img.src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data="+encodeURIComponent(url);
+      qrBox.appendChild(img);
     }
-  </script>
+  }
+  function updateShare(){
+    if(!code){ shareLink.value=""; qrBox.innerHTML=""; return; }
+    const url = `${location.origin}?match=${code}`;
+    shareLink.value = url;
+    renderQR(url);
+  }
+  async function sha256Base64(text){
+    const enc=new TextEncoder().encode(text);
+    const buf=await crypto.subtle.digest('SHA-256',enc);
+    const bytes=new Uint8Array(buf); let bin=""; bytes.forEach(b=>bin+=String.fromCharCode(b));
+    return btoa(bin);
+  }
+
+  function subscribe(c){
+    if(unsub) unsub();
+    const refDoc = doc(db,"matches",c);
+    unsub = onSnapshot(refDoc,(snap)=>{
+      const d=snap.data()||{};
+      teamName.value = d.team || "";
+      if(d.logoDataUrl){
+        logoImg.src = d.logoDataUrl; logoImg.style.display='block';
+      }
+      setPlayers(d.players || []);
+      renderResults(d.votes || {});
+    });
+  }
+
+  function setPlayers(list){
+    localPlayers = list.slice().sort((a,b)=>(+a.number||0)-(+b.number||0));
+    playerCount.textContent = `${localPlayers.length} player${localPlayers.length===1?"":"s"}`;
+    playersList.querySelectorAll('.rowi').forEach(n=>n.remove());
+    localPlayers.forEach((p,idx)=>{
+      const row=document.createElement('div'); row.className='rowi';
+      row.style.display='grid'; row.style.gridTemplateColumns='72px 1fr 140px'; row.style.alignItems='center';
+      row.innerHTML = `
+        <div class="cell mono">${p.number||""}</div>
+        <div class="cell">${p.name||""}</div>
+        <div class="cell"><button data-i="${idx}" class="vote-btn">Vote</button></div>`;
+      playersList.appendChild(row);
+    });
+    playersList.querySelectorAll('.vote-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const i=+btn.dataset.i; if(localPlayers[i]) castVote(localPlayers[i].name);
+      });
+    });
+    voteList.innerHTML = localPlayers.map(p=>
+      `<button class="vote-btn" data-name="${p.name}">${p.number?`${p.number}. `:""}${p.name}</button>`
+    ).join(" ");
+    voteList.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>castVote(b.dataset.name)));
+  }
+
+  function renderResults(votes){
+    const counts={}; Object.values(votes||{}).forEach(v=>{ counts[v]=(counts[v]||0)+1; });
+    const arr=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    voteCount.textContent = `${Object.keys(votes||{}).length} vote${Object.keys(votes||{}).length===1?"":"s"}`;
+    results.innerHTML = arr.length ? arr.map(([name,n])=>`<div style="padding:.35rem 0">${name}: <b>${n}</b></div>`).join("") : `<div class="muted">No votes yet</div>`;
+  }
+
+  async function castVote(name){
+    if(!code) return alert("Create or join a match first.");
+    const refDoc = doc(db,"matches",code);
+    const snap = await getDoc(refDoc);
+    const data = snap.data() || {};
+    const votes = data.votes || {};
+    votes[deviceId] = name;
+    await setDoc(refDoc,{ votes },{ merge:true });
+    voteState.textContent = "Voted";
+  }
+
+  async function createMatch(){
+    code = makeCode(); matchCodeInput.value = code;
+    const refDoc = doc(db,"matches",code);
+    await setDoc(refDoc,{ team: teamName.value || "Canvey Island FC", players:[], votes:{}, created:new Date().toISOString() });
+    localStorage.setItem("motm_last_code", code);
+    subscribe(code);
+    updateShare();
+  }
+  async function joinMatch(){
+    const c=(matchCodeInput.value||"").trim().toUpperCase();
+    if(!c) return alert("Enter a match code");
+    code=c; localStorage.setItem("motm_last_code", code);
+    subscribe(code);
+    updateShare();
+  }
+
+  async function ensurePasswordAndReset(){
+    if(!code) return alert("No match active");
+    const refDoc=doc(db,"matches",code);
+    const snap=await getDoc(refDoc);
+    const data=snap.data()||{};
+    const hasPass=!!data.passHash;
+    if(!hasPass){
+      const pass=prompt("Set a password for this match (used to reset votes):");
+      if(!pass) return;
+      const confirmPass=prompt("Confirm password:"); if(pass!==confirmPass){alert("Passwords do not match.");return;}
+      const hash=await sha256Base64(pass); await updateDoc(refDoc,{ passHash:hash });
+      alert("Password set for this match. Press Reset again to clear votes.");
+      return;
+    }else{
+      const entry=prompt("Enter reset password:"); if(entry==null) return;
+      const hash=await sha256Base64(entry); if(hash!==data.passHash){alert("Incorrect password.");return;}
+      if(!confirm("Reset all votes for this match?")) return;
+      await updateDoc(refDoc,{ votes:{} }); alert("Votes reset.");
+    }
+  }
+
+  // --- Logo via Firestore (no Storage) ---
+  uploadBtn.addEventListener('click',()=>logoInput.click());
+  logoImg.addEventListener('click',()=>logoInput.click());
+  removeBtn.addEventListener('click', async()=>{
+    logoImg.src=""; logoImg.style.display='none'; logoInput.value="";
+    logoError.textContent="";
+    if(code){ await updateDoc(doc(db,"matches",code),{ logoDataUrl:"" }); }
+  });
+
+  logoInput.addEventListener('change', async (e)=>{
+    logoError.textContent="";
+    const file=e.target.files && e.target.files[0];
+    if(!file) return;
+    if(!code){ alert("Create or join a match first, then upload the logo."); return; }
+    try{
+      const dataUrl=await downscaleToDataUrl(file, 900, 0.75);
+      // Size guard (Firestore has 1MB document limit; keep margin)
+      const bytes = Math.ceil((dataUrl.length*3)/4); // rough base64 → bytes
+      if(bytes > 900*1024){ // ~900KB
+        logoError.textContent="Logo is still too large after compression. Please choose a smaller image (screenshot or crop).";
+        return;
+      }
+      await updateDoc(doc(db,"matches",code),{ logoDataUrl:dataUrl });
+      logoImg.src=dataUrl; logoImg.style.display='block';
+    }catch(err){
+      console.error(err);
+      logoError.textContent="Could not process image. Try a smaller photo.";
+    }
+  });
+
+  async function downscaleToDataUrl(file, maxDim=900, quality=0.75){
+    const img=await loadImage(file);
+    const {width,height}=img;
+    const scale=Math.min(1, maxDim/Math.max(width,height));
+    const outW=Math.max(1,Math.round(width*scale));
+    const outH=Math.max(1,Math.round(height*scale));
+    const canvas=document.createElement('canvas');
+    canvas.width=outW; canvas.height=outH;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle="#FFF"; ctx.fillRect(0,0,outW,outH);
+    ctx.drawImage(img,0,0,outW,outH);
+    let dataUrl=canvas.toDataURL('image/jpeg',quality);
+    if(!dataUrl || dataUrl.length<32) dataUrl=canvas.toDataURL('image/png');
+    return dataUrl;
+  }
+  function loadImage(file){
+    return new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>resolve(img);
+      img.onerror=reject;
+      const url=URL.createObjectURL(file);
+      img.src=url;
+      img.addEventListener('load',()=>URL.revokeObjectURL(url),{once:true});
+    });
+  }
+
+  // Wire up
+  document.getElementById('addPlayer').addEventListener('click', async ()=>{
+    if(!code) return alert("Create or join a match first.");
+    const number=pNum.value.trim(); const name=pName.value.trim();
+    if(!name) return alert("Enter a player name");
+    const refDoc=doc(db,"matches",code); const snap=await getDoc(refDoc);
+    const d=snap.data()||{}; const players=d.players||[]; players.push({number,name});
+    await setDoc(refDoc,{players},{merge:true});
+    pNum.value=""; pName.value=""; pNum.focus();
+  });
+  btnCopy.addEventListener('click',()=>{
+    if(!shareLink.value) return;
+    navigator.clipboard.writeText(shareLink.value);
+    btnCopy.textContent="Copied!"; setTimeout(()=>btnCopy.textContent="Copy link",1200);
+  });
+  btnReset.addEventListener('click', ensurePasswordAndReset);
+  btnNew.addEventListener('click', createMatch);
+  btnJoin.addEventListener('click', joinMatch);
+
+  const qs=new URLSearchParams(location.search);
+  const incoming=(qs.get("match")||"").toUpperCase();
+  const last=localStorage.getItem("motm_last_code")||"";
+  if(incoming){ matchCodeInput.value=incoming; joinMatch(); }
+  else if(last){ matchCodeInput.value=last; joinMatch(); }
+}
+</script>
 </body>
 </html>
