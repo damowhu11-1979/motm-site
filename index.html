@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -146,8 +146,12 @@
       <div id="results"></div>
     </div>
   </div>
+
+  <!-- AD SLOT (300×250) -->
+  <div id="ad-slot-1" style="display:flex;justify-content:center;margin:22px 0;"></div>
 </main>
 
+<!-- App logic (module script) -->
 <script type="module">
 window.addEventListener('DOMContentLoaded', init);
 
@@ -166,7 +170,7 @@ async function init(){
     appId: "1:953454926915:web:8744eeef4bf9d967e488f6"
   };
 
-  // DOM
+  // DOM refs
   const onlineState = document.getElementById('onlineState');
   const teamName = document.getElementById('teamName');
   const matchCodeInput = document.getElementById('matchCode');
@@ -186,7 +190,7 @@ async function init(){
   const pNum = document.getElementById('pNum');
   const pName = document.getElementById('pName');
 
-  // Logo
+  // Logo refs
   const uploadBtn = document.getElementById('uploadLogoBtn');
   const removeBtn = document.getElementById('removeLogoBtn');
   const logoInput = document.getElementById('logoUpload');
@@ -335,9 +339,9 @@ async function init(){
     }
   }
 
-  // --- Logo via Firestore (no Storage), with mobile-robust decoding ---
-  uploadBtn.addEventListener('click',()=>logoInput.click());
-  logoImg.addEventListener('click',()=>logoInput.click());
+  // Logo: upload / remove
+  document.getElementById('uploadLogoBtn').addEventListener('click',()=>logoInput.click());
+  document.getElementById('teamLogo').addEventListener('click',()=>logoInput.click());
 
   removeBtn.addEventListener('click', async()=>{
     logoImg.src=""; logoImg.style.display='none'; logoInput.value="";
@@ -352,7 +356,7 @@ async function init(){
     if(!code){ alert("Create or join a match first, then upload the logo."); return; }
     try{
       const dataUrl=await downscaleToDataUrl(file, 900, 0.75);
-      const bytes = Math.ceil((dataUrl.length*3)/4); // base64→bytes estimate
+      const bytes = Math.ceil((dataUrl.length*3)/4);
       if(bytes > 900*1024){
         logoError.textContent="Logo is still too large after compression. Please choose a smaller image (screenshot or crop).";
         return;
@@ -365,27 +369,21 @@ async function init(){
     }
   });
 
-  // ==== NEW robust image decoding functions ====
+  // Robust image decode for mobile
   async function downscaleToDataUrl(file, maxDim = 900, quality = 0.75) {
-    const bmp = await loadBitmap(file); // ImageBitmap or HTMLImageElement
+    const bmp = await loadBitmap(file);
     const width  = bmp.width  || bmp.naturalWidth;
     const height = bmp.height || bmp.naturalHeight;
-
     const scale = Math.min(1, maxDim / Math.max(width, height));
     const outW = Math.max(1, Math.round(width * scale));
     const outH = Math.max(1, Math.round(height * scale));
-
     const canvas = document.createElement('canvas');
-    canvas.width = outW;
-    canvas.height = outH;
+    canvas.width = outW; canvas.height = outH;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, outW, outH);
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, outW, outH);
     ctx.drawImage(bmp, 0, 0, outW, outH);
-
     let dataUrl = canvas.toDataURL('image/jpeg', quality);
     if (!dataUrl || dataUrl.length < 32) dataUrl = canvas.toDataURL('image/png');
-
     try { bmp.close && bmp.close(); } catch {}
     return dataUrl;
   }
@@ -399,9 +397,7 @@ async function init(){
     if ('createImageBitmap' in window) {
       try {
         return await createImageBitmap(file, { imageOrientation: 'from-image', premultiplyAlpha: 'default' });
-      } catch (e) {
-        // fall through
-      }
+      } catch (e) {}
     }
     return await new Promise((resolve, reject) => {
       const url = URL.createObjectURL(file);
@@ -412,7 +408,7 @@ async function init(){
     });
   }
 
-  // Wire up
+  // UI wiring
   document.getElementById('addPlayer').addEventListener('click', async ()=>{
     if(!code) return alert("Create or join a match first.");
     const number=pNum.value.trim(); const name=pName.value.trim();
@@ -437,19 +433,41 @@ async function init(){
   if(incoming){ matchCodeInput.value=incoming; joinMatch(); }
   else if(last){ matchCodeInput.value=last; joinMatch(); }
 }
- <script type="text/javascript">
-	atOptions = {
-		'key' : '029e23333d8fd334eb246910d1a53a54',
-		'format' : 'iframe',
-		'height' : 250,
-		'width' : 300,
-		'params' : {}
-	};
 </script>
-<script type="text/javascript" src="//www.highperformanceformat.com/029e23333d8fd334eb246910d1a53a54/invoke.js"></script>
+
+<!-- AD SCRIPT (outside module, lazy-loaded into #ad-slot-1) -->
+<script>
+(function () {
+  const slotId = 'ad-slot-1';
+  function loadAd() {
+    window.atOptions = {
+      key: '029e23333d8fd334eb246910d1a53a54',
+      format: 'iframe',
+      height: 250,
+      width: 300,
+      params: {}
+    };
+    const s = document.createElement('script');
+    s.src = 'https://www.highperformanceformat.com/029e23333d8fd334eb246910d1a53a54/invoke.js';
+    s.async = true;
+    const slot = document.getElementById(slotId);
+    if (slot) slot.appendChild(s);
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          loadAd();
+          io.disconnect();
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+    io.observe(document.getElementById(slotId));
+  } else {
+    window.addEventListener('load', loadAd);
+  }
+})();
 </script>
+
 </body>
 </html>
-
-
-
